@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
-from measurements import FullMeasurements, default_measurements
+from measurements import FullMeasurements
 
 
 @dataclass
@@ -55,7 +55,8 @@ class CorsetPattern:
         # F: Back top
         self.points['F'] = np.array([0.0, self.m.back_waist_length + 1.0])
         # EG = 4/15 neck_circumference
-        width = 4 * self.m.neck_circumference / 15
+        # width = 4 * self.m.neck_circumference / 15
+        width = 4 * self.m.neck_circumference / 18
         self.helper_points['G'] = self.points['E'] - np.array([width, 0])
         # GH = 1/6 neck circumference.
         height = self.m.neck_circumference / 6
@@ -117,14 +118,23 @@ class CorsetPattern:
 
     def _plot_pattern(self, ax, annotate=True):
         ax.set_aspect('equal')
-        
+
         # Extract coordinates for plotting lines
         pts = self.points
-        
+
         # Helper to draw line between keys
         def draw_line(k1, k2, style='-', color='black'):
             if k1 in pts and k2 in pts:
                 ax.plot([pts[k1][0], pts[k2][0]], [pts[k1][1], pts[k2][1]], linestyle=style, color=color, linewidth=1)
+
+        # Helper to draw cubic Bezier curve
+        def draw_bezier(p0, p1, p2, p3, style='-', color='black', num_points=100):
+            t = np.linspace(0, 1, num_points)
+            curve = (1-t)[:, np.newaxis]**3 * p0 + \
+                    3*(1-t)[:, np.newaxis]**2 * t[:, np.newaxis] * p1 + \
+                    3*(1-t)[:, np.newaxis] * t[:, np.newaxis]**2 * p2 + \
+                    t[:, np.newaxis]**3 * p3
+            ax.plot(curve[:, 0], curve[:, 1], linestyle=style, color=color, linewidth=1)
 
         # Construction Grid
         draw_line('A', 'E', '--', 'gray') # Center Axis
@@ -133,16 +143,98 @@ class CorsetPattern:
         draw_line('C', 'C1', '--', 'gray') # Bust line
         draw_line('D', 'D1', '--', 'gray') # Chest line
         draw_line('E', 'G', '--', 'gray') # Neck base
-        
+
         # Outline - Front
-        draw_line('A1', 'B1', '-', 'blue') # Hip curve (straight approx)
-        draw_line('B1', 'C2', '-', 'blue') # Side seam
-        draw_line('H', 'E', '-', 'blue')   # Front Neck curve (straight approx)
+        # A1 to B1: curve starting perpendicular to A-A1 (horizontal), so starting vertically
+        # The curve approaches B1 from below (direction from B toward E)
+        p0_a1b1 = pts['A1']
+        p3_a1b1 = pts['B1']
+        # Direction at A1: perpendicular to A-A1 (which is horizontal), so vertical (0, 1)
+        control_dist_a1 = np.linalg.norm(p3_a1b1 - p0_a1b1) / 3
+        p1_a1b1 = p0_a1b1 + np.array([0, control_dist_a1])
+        # Direction at B1: approaching from below, parallel to B-E (upward)
+        vec_be = pts['E'] - pts['B']
+        unit_be = vec_be / np.linalg.norm(vec_be)
+        control_dist_b1 = np.linalg.norm(p3_a1b1 - p0_a1b1) / 3
+        p2_a1b1 = p3_a1b1 - unit_be * control_dist_b1
+        draw_bezier(p0_a1b1, p1_a1b1, p2_a1b1, p3_a1b1, '-', 'blue')
+
+        # B1 to C2: smooth continuation, passing by C1, relatively straight
+        p0_b1c2 = pts['B1']
+        p3_b1c2 = pts['C2']
+        # Direction at B1: continuing upward (parallel to B-E)
+        p1_b1c2 = p0_b1c2 + unit_be * control_dist_b1
+        # Make it pass through C1 by using C1 to guide the curve
+        # Use a nearly straight path through C1
+        vec_b1c1 = pts['C1'] - pts['B1']
+        vec_c1c2 = pts['C2'] - pts['C1']
+        dist_b1c1 = np.linalg.norm(vec_b1c1)
+        dist_c1c2 = np.linalg.norm(vec_c1c2)
+        # Control point near C2 should follow the C1-C2 direction for straightness
+        unit_c1c2 = vec_c1c2 / dist_c1c2
+        p2_b1c2 = p3_b1c2 - unit_c1c2 * (dist_c1c2 * 0.5)
+        draw_bezier(p0_b1c2, p1_b1c2, p2_b1c2, p3_b1c2, '-', 'blue')
+
+        # H to E: perpendicular to K-H at H, leaving H toward E, perpendicular to E-B at E
+        p0_he = pts['H']
+        p3_he = pts['E']
+        # Direction at H: toward E (but must be perpendicular to K-H)
+        vec_kh = pts['H'] - pts['K']
+        unit_kh = vec_kh / np.linalg.norm(vec_kh)
+        # Choose perpendicular direction that points toward E
+        perp_kh_1 = np.array([-unit_kh[1], unit_kh[0]])
+        perp_kh_2 = np.array([unit_kh[1], -unit_kh[0]])
+        vec_he = pts['E'] - pts['H']
+        # Pick the perpendicular that has positive dot product with H->E
+        if np.dot(perp_kh_1, vec_he) > np.dot(perp_kh_2, vec_he):
+            perp_kh = perp_kh_1
+        else:
+            perp_kh = perp_kh_2
+        control_dist_h = np.linalg.norm(vec_he) / 3
+        p1_he = p0_he + perp_kh * control_dist_h
+        # Direction at E: perpendicular to E-B (horizontal)
+        vec_eb = pts['B'] - pts['E']
+        unit_eb = vec_eb / np.linalg.norm(vec_eb)
+        perp_eb = np.array([-unit_eb[1], unit_eb[0]]) # Perpendicular to E-B (horizontal)
+        p2_he = p3_he - perp_eb * control_dist_h
+        draw_bezier(p0_he, p1_he, p2_he, p3_he, '-', 'blue')
+
         draw_line('H', 'K', '-', 'blue')   # Shoulder
-        
-        # Armhole Guide
-        draw_line('C2', 'D1', ':', 'green')
-        draw_line('D1', 'K', ':', 'green')
+
+        # C2 to K curve: leaves C2 perpendicular to C1-C2 toward main axis, passes by D1, perpendicular to H-K at K
+        p0_c2k = pts['C2']
+        p3_c2k = pts['K']
+        # Direction at C2: perpendicular to C1-C2, toward the main axis (x=0)
+        vec_c1c2 = pts['C2'] - pts['C1']
+        unit_c1c2 = vec_c1c2 / np.linalg.norm(vec_c1c2)
+        # Two perpendicular options
+        perp_c1c2_1 = np.array([-unit_c1c2[1], unit_c1c2[0]])
+        perp_c1c2_2 = np.array([unit_c1c2[1], -unit_c1c2[0]])
+        # Choose the one pointing toward main axis (positive x direction from C2)
+        if perp_c1c2_1[0] > perp_c1c2_2[0]:
+            perp_c1c2 = perp_c1c2_1
+        else:
+            perp_c1c2 = perp_c1c2_2
+
+        # Direction at K: perpendicular to H-K
+        vec_hk = pts['K'] - pts['H']
+        unit_hk = vec_hk / np.linalg.norm(vec_hk)
+        # Choose perpendicular that points toward the curve (toward D1/C2)
+        perp_hk_1 = np.array([-unit_hk[1], unit_hk[0]])
+        perp_hk_2 = np.array([unit_hk[1], -unit_hk[0]])
+        vec_kc2 = pts['C2'] - pts['K']
+        if np.dot(perp_hk_1, vec_kc2) > np.dot(perp_hk_2, vec_kc2):
+            perp_hk = perp_hk_1
+        else:
+            perp_hk = perp_hk_2
+
+        # Adjust control distances to pass through D1
+        dist_c2_d1 = np.linalg.norm(pts['D1'] - pts['C2'])
+        dist_d1_k = np.linalg.norm(pts['K'] - pts['D1'])
+
+        p1_c2k = p0_c2k + perp_c1c2 * dist_c2_d1 * 0.8
+        p2_c2k = p3_c2k + perp_hk * dist_d1_k * 0.8
+        draw_bezier(p0_c2k, p1_c2k, p2_c2k, p3_c2k, '-', 'blue')
         
         # Back Reference
         draw_line('F', 'I', '-', 'red')
@@ -167,8 +259,10 @@ class CorsetPattern:
 # --- 3. Example Usage ---
 
 if __name__ == "__main__":
-    # Example measurements (Standard Size 38 approx)
+    from measurements import default_measurements, individual_measurements
     fm = default_measurements(size=38)
+    fm = individual_measurements("vivien")
+    fm.stretch(horizontal=.25, vertical=.1)
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     pattern = CorsetPattern(corset_m)

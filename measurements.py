@@ -151,8 +151,8 @@ def individual_measurements(person: Person | str) -> FullMeasurements:
     """
     Return FullMeasurements for a specific individual.
     """
-    if isinstance(person, str):
-        person = Person(person)
+    if not isinstance(person, Person):
+        person = Person(person.lower())
 
     match person:
         case Person.Vivien:
@@ -165,12 +165,14 @@ def individual_measurements(person: Person | str) -> FullMeasurements:
                 "full_waist":               83.0,   # 6. Tour de taille
                 "small_hip":                94.0,   # 7. Tour des petites hanches
                 "full_hip":                 101.0,  # 8. Tour de bassin
-                "neck_circumference":       41.0,   # 9. Tour d'encollure
+                # "neck_circumference":       41.0,   # 9. Tour d'encollure
+                "neck_circumference":       38.0,   # 9. Tour d'encollure
                 "half_back_width":          19.5,   # 10. 1/2 carrure dos
                 "half_front_width":         18.5,   # 11. 1/2 carrure devant
                 "shoulder_length":          13.0,   # 12. Longueur d'épaule
                 "armhole_circumference":    50.0,   # 13. Tour d'emmanchure
-                "underarm_height":          27.5,   # 14. Hauteur dessous de bras
+                # "underarm_height":          27.5,   # 14. Hauteur dessous de bras
+                "underarm_height":          22.5,   # 14. Hauteur dessous de bras
                 "arm_length":               66.0,   # 15. Longueur de bras
                 "upper_arm":                33.0,   # 16. Grosseur de bras
                 "elbow_height":             40.0,   # 17. Hauteur coude
