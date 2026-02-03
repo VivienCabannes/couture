@@ -17,21 +17,23 @@ class CorsetMeasurements(Measurements):
     bust_height: float        # Hauteur de poitrine
     full_waist: float         # Tour de taille
     full_hip: float           # Tour de bassin
-    neck_circumference: float # Tour d'encollure
     half_back_width: float    # 1/2 carrure dos
     half_front_width: float   # 1/2 carrure devant
     shoulder_length: float    # Longueur d'épaule
     underarm_height: float    # Hauteur de dessous de bras
     waist_to_hip: float       # Hauteur taille-bassin
 
+    neck_width: float         # Largeur de cou
+    neck_back_height: float   # Hauteur de cou, from top back to top of shoulder line
+
     _horizontal: ClassVar[list[str]] = [
         "full_bust",          # Tour de poitrine
         "full_waist",         # Tour de taille
         "full_hip",           # Tour de bassin
-        "neck_circumference", # Tour d'encollure
         "half_back_width",    # 1/2 carrure dos
         "half_front_width",   # 1/2 carrure devant
         "shoulder_length",    # Longueur d'épaule
+        "neck_width",         # Largeur de cou
     ]
     _vertical: ClassVar[list[str]] = [
         "back_waist_length",  # Longueur taille dos
@@ -39,11 +41,35 @@ class CorsetMeasurements(Measurements):
         "bust_height",        # Hauteur de poitrine
         "underarm_height",    # Hauteur de dessous de bras
         "waist_to_hip",       # Hauteur taille-bassin
+        "neck_back_height",   # Hauteur de cou
     ]
 
     @classmethod
     def from_full_measurements(cls, fm: FullMeasurements):
-        kwargs = {f.name: getattr(fm, f.name) for f in fields(cls) if f.name not in ('stretched', '_horizontal', '_vertical')}
+        kwargs = {f.name: getattr(fm, f.name) for f in fields(cls) if f.name not in ('stretched', '_horizontal', '_vertical', 'neck_width', 'neck_back_height')}
+
+        # Take 1 as a default value for neck height
+        neck_back_height = 1.0
+        neck_front_height = fm.back_waist_length - fm.front_waist_length + neck_back_height
+
+        # Solve for neck_width according to the following equation:
+        #   front_arc + back_arc = neck_circumference / 2
+        # using quarter ellipse approximation
+        #   arc ≈ (pi/2) × sqrt((a ** 2 + b ** 2) / 2)
+        # We solve numerically for f(a) = 0 with dichotomic search where
+        def f(a):
+            return np.sqrt((a**2 + neck_back_height ** 2) / 2) + np.sqrt((a**2 + neck_front_height ** 2) / 2) - fm.neck_circumference / np.pi
+
+        lo, hi = 0.01, fm.neck_circumference / np.pi
+        while hi - lo > 0.1:
+            mid = (lo + hi) / 2
+            if f(mid) < 0:
+                lo = mid
+            else:
+                hi = mid
+        kwargs['neck_back_height'] = neck_back_height 
+        kwargs['neck_width'] = (lo + hi) / 2
+
         return cls(**kwargs, stretched=fm.stretched)
 
 
@@ -72,13 +98,11 @@ class CorsetPattern:
         self.points['E'] = np.array([0.0, self.m.front_waist_length])
         # F: Back top
         self.points['F'] = np.array([0.0, self.m.back_waist_length + 1.0])
-        # EG = 4/15 neck_circumference
-        # width = 4 * self.m.neck_circumference / 15
-        width = 4 * self.m.neck_circumference / 18
-        self.helper_points['G'] = self.points['E'] - np.array([width, 0])
-        # GH = 1/6 neck circumference.
-        height = self.m.neck_circumference / 6
-        self.points['H'] = self.helper_points['G'] + np.array([0, height])
+        # Use pre-computed neck_width
+        self.helper_points['G'] = self.points['E'] - np.array([self.m.neck_width, 0])
+        self.points['H'] = self.points['F'] + np.array([-self.m.neck_width, self.m.neck_back_height])
+        # J is 1/3 of the way from G to H
+        self.helper_points['J'] = (2 * self.helper_points['G'] + self.points['H']) / 3
 
         # Body construction
         # A: Hip level
@@ -102,9 +126,6 @@ class CorsetPattern:
         self.points['D1'] = self.points['D'] - np.array([width, 0])
         width = self.m.half_back_width
         self.points['D2'] = self.points['D'] - np.array([width, 0])
-        # GJ = 1/3 Gh
-        height = self.m.neck_circumference / 18
-        self.helper_points['J'] = self.helper_points['G'] + np.array([0, height])
         # HK: shoulder length
         height = self.points['H'][1] - self.helper_points['J'][1]
         width = np.sqrt(self.m.shoulder_length ** 2 - height ** 2)
@@ -281,7 +302,7 @@ class CorsetPattern:
 
 if __name__ == "__main__":
     from measurements import default_measurements, individual_measurements
-    fm = individual_measurements("vivien")
+    fm = individual_measurements("kwama")
     fm = default_measurements(size=38)
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
