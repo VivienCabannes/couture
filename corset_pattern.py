@@ -1,14 +1,15 @@
 from dataclasses import dataclass, fields
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
-from measurements import FullMeasurements
+from measurements import FullMeasurements, Measurements
 
 
 @dataclass
-class CorsetMeasurements:
+class CorsetMeasurements(Measurements):
     """Subset of measurements specifically required for this corset draft."""
     back_waist_length: float  # Longueur taille dos
     front_waist_length: float # Longueur taille devant
@@ -23,10 +24,27 @@ class CorsetMeasurements:
     underarm_height: float    # Hauteur de dessous de bras
     waist_to_hip: float       # Hauteur taille-bassin
 
+    _horizontal: ClassVar[list[str]] = [
+        "full_bust",          # Tour de poitrine
+        "full_waist",         # Tour de taille
+        "full_hip",           # Tour de bassin
+        "neck_circumference", # Tour d'encollure
+        "half_back_width",    # 1/2 carrure dos
+        "half_front_width",   # 1/2 carrure devant
+        "shoulder_length",    # Longueur d'épaule
+    ]
+    _vertical: ClassVar[list[str]] = [
+        "back_waist_length",  # Longueur taille dos
+        "front_waist_length", # Longueur taille devant
+        "bust_height",        # Hauteur de poitrine
+        "underarm_height",    # Hauteur de dessous de bras
+        "waist_to_hip",       # Hauteur taille-bassin
+    ]
+
     @classmethod
     def from_full_measurements(cls, fm: FullMeasurements):
-        kwargs = {f.name: getattr(fm, f.name) for f in fields(cls)}
-        return cls(**kwargs)
+        kwargs = {f.name: getattr(fm, f.name) for f in fields(cls) if f.name not in ('stretched', '_horizontal', '_vertical')}
+        return cls(**kwargs, stretched=fm.stretched)
 
 
 class CorsetPattern:
@@ -244,7 +262,11 @@ class CorsetPattern:
         for name, coord in pts.items():
             ax.plot(coord[0], coord[1], 'o', color='black', markersize=3)
             if annotate:
-                ax.text(coord[0]+0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", fontsize=8)
+                # Place D2 label on left side to avoid overlap with D1
+                if name == 'D2':
+                    ax.text(coord[0]-0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", fontsize=8, ha='right')
+                else:
+                    ax.text(coord[0]+0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", fontsize=8)
 
         # Plot helper points (without coordinates)
         for name, coord in self.helper_points.items():
@@ -256,15 +278,14 @@ class CorsetPattern:
         ax.plot([0, 10], [min(pts['A'][1], pts['A1'][1]) - 5, min(pts['A'][1], pts['A1'][1]) - 5], linewidth=4, color='black')
         ax.text(5, min(pts['A'][1], pts['A1'][1]) - 7, "10 cm Scale", ha='center')
 
-# --- 3. Example Usage ---
 
 if __name__ == "__main__":
     from measurements import default_measurements, individual_measurements
-    fm = default_measurements(size=38)
     fm = individual_measurements("vivien")
-    fm.stretch(horizontal=.25, vertical=.1)
+    fm = default_measurements(size=38)
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
+    corset_m.stretch(horizontal=0.0, vertical=0.0)
     pattern = CorsetPattern(corset_m)
     
     # Print Coordinates
