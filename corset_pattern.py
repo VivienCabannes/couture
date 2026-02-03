@@ -48,8 +48,8 @@ class CorsetMeasurements(Measurements):
     def from_full_measurements(cls, fm: FullMeasurements):
         kwargs = {f.name: getattr(fm, f.name) for f in fields(cls) if f.name not in ('stretched', '_horizontal', '_vertical', 'neck_width', 'neck_back_height')}
 
-        # Take 1 as a default value for neck height
-        neck_back_height = 1.0
+        # Take 2 as a default value for neck height
+        neck_back_height = 2.0
         neck_front_height = fm.back_waist_length - fm.front_waist_length + neck_back_height
 
         # Solve for neck_width according to the following equation:
@@ -90,39 +90,53 @@ class CorsetPattern:
         # Waist as the reference
         # B: Waist level
         self.points['B'] = np.array([0.0, 0.0])
-        width = (self.m.full_waist / 4) + 1.0
+        width = self.m.full_waist / 4
         self.points['B1'] = self.points['B'] - np.array([width, 0])
 
         # Neck construction
         # E: Front top
         self.points['E'] = np.array([0.0, self.m.front_waist_length])
         # F: Back top
-        self.points['F'] = np.array([0.0, self.m.back_waist_length + 1.0])
+        self.points['F'] = np.array([0.0, self.m.back_waist_length + self.m.neck_back_height / 2])
         # Use pre-computed neck_width
         self.helper_points['G'] = self.points['E'] - np.array([self.m.neck_width, 0])
-        self.points['H'] = self.points['F'] + np.array([-self.m.neck_width, self.m.neck_back_height])
+        self.points['H'] = self.points['F'] + np.array([-self.m.neck_width, self.m.neck_back_height / 2])
         # J is 1/3 of the way from G to H
         self.helper_points['J'] = (2 * self.helper_points['G'] + self.points['H']) / 3
 
         # Body construction
         # A: Hip level
         self.points['A'] = np.array([0.0, -self.m.waist_to_hip])
-        width = (self.m.full_hip / 4) + 0.5
+        width = self.m.full_hip / 4
         self.points['A1'] = self.points['A'] - np.array([width, 0])
         # C: Bust level
         coordinate = self.points['E'][1] - self.m.bust_height
         self.points['C'] = np.array([0.0, coordinate])
-        width = (self.m.full_bust / 4)
-        self.points['C1'] = self.points['C'] - np.array([width, 0])
-        # B1C2: Underarm height, prolonging B1C1
-        vec_b1c1 = self.points['C1'] - self.points['B1']
-        unit_vec = vec_b1c1 / np.linalg.norm(vec_b1c1)
-        self.points['C2'] = self.points['B1'] + (unit_vec * self.m.underarm_height)
+        width = self.m.full_hip / 4
+        # Two construction methods
+        if False:
+            # C1: defined by full_bust and bust level
+            self.points['C1'] = self.points['C'] - np.array([width, 0])
+            # B1C2: Underarm height, prolonging B1C1
+            vec_b1c1 = self.points['C1'] - self.points['B1']
+            unit_vec = vec_b1c1 / np.linalg.norm(vec_b1c1)
+            self.points['C2'] = self.points['B1'] + (unit_vec * self.m.underarm_height)
+        else:
+            # C2: defined by full_bust and underarm_height
+            x = - width
+            dx = x - self.points['B1'][0]
+            dy = np.sqrt(self.m.underarm_height ** 2 - dx ** 2)
+            y = self.points['B1'][1] + dy
+            self.points['C2'] = np.array([x, y])
+            # C1: on line B1-C2, at bust level
+            vec = self.points['C2'] - self.points['B1']
+            t = (self.points['C'][1] - self.points['B1'][1]) / vec[1]
+            self.points['C1'] = self.points['B1'] + t * vec
         
         # Shoulder construction
         # D: Shoulder level, at the middle of F and C
         self.points['D'] = (self.points['F'] + self.points['C']) / 2
-        width = self.m.half_front_width + 0.3
+        width = self.m.half_front_width
         self.points['D1'] = self.points['D'] - np.array([width, 0])
         width = self.m.half_back_width
         self.points['D2'] = self.points['D'] - np.array([width, 0])
@@ -302,8 +316,9 @@ class CorsetPattern:
 
 if __name__ == "__main__":
     from measurements import default_measurements, individual_measurements
-    fm = individual_measurements("kwama")
     fm = default_measurements(size=38)
+    fm = individual_measurements("vivien")
+    fm = individual_measurements("kwama")
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     corset_m.stretch(horizontal=0.0, vertical=0.0)
