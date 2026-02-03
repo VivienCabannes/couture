@@ -32,7 +32,6 @@ class CorsetMeasurements(Measurements):
         "full_hip",           # Tour de bassin
         "half_back_width",    # 1/2 carrure dos
         "half_front_width",   # 1/2 carrure devant
-        "shoulder_length",    # Longueur d'épaule
         "neck_width",         # Largeur de cou
     ]
     _vertical: ClassVar[list[str]] = [
@@ -101,8 +100,6 @@ class CorsetPattern:
         # Use pre-computed neck_width
         self.helper_points['G'] = self.points['E'] - np.array([self.m.neck_width, 0])
         self.points['H'] = self.points['F'] + np.array([-self.m.neck_width, self.m.neck_back_height / 2])
-        # J is 1/3 of the way from G to H
-        self.helper_points['J'] = (2 * self.helper_points['G'] + self.points['H']) / 3
 
         # Body construction
         # A: Hip level
@@ -140,9 +137,12 @@ class CorsetPattern:
         self.points['D1'] = self.points['D'] - np.array([width, 0])
         width = self.m.half_back_width
         self.points['D2'] = self.points['D'] - np.array([width, 0])
-        # HK: shoulder length
-        height = self.points['H'][1] - self.helper_points['J'][1]
-        width = np.sqrt(self.m.shoulder_length ** 2 - height ** 2)
+        # Shoulder construction with component-wise stretch
+        # J is 1/3 of the way from G to H
+        self.helper_points['J'] = (2 * self.helper_points['G'] + self.points['H']) / 3
+        # Recover unstretched width from unstretched height before stretching it
+        HJ_unstretched = (self.points['H'][1] - self.helper_points['J'][1]) / self.m.v_factor
+        width = np.sqrt(self.m.shoulder_length ** 2 - HJ_unstretched ** 2) * self.m.h_factor
         self.points['K'] = self.helper_points['J'] - np.array([width, 0])
 
     def generate_pdf(self, filename="corset_pattern.pdf"):
@@ -219,9 +219,7 @@ class CorsetPattern:
         p1_b1c2 = p0_b1c2 + unit_be * control_dist_b1
         # Make it pass through C1 by using C1 to guide the curve
         # Use a nearly straight path through C1
-        vec_b1c1 = pts['C1'] - pts['B1']
         vec_c1c2 = pts['C2'] - pts['C1']
-        dist_b1c1 = np.linalg.norm(vec_b1c1)
         dist_c1c2 = np.linalg.norm(vec_c1c2)
         # Control point near C2 should follow the C1-C2 direction for straightness
         unit_c1c2 = vec_c1c2 / dist_c1c2
