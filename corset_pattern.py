@@ -315,8 +315,8 @@ class CorsetPattern:
 if __name__ == "__main__":
     from measurements import default_measurements, individual_measurements
     fm = default_measurements(size=38)
-    fm = individual_measurements("vivien")
     fm = individual_measurements("kwama")
+    fm = individual_measurements("vivien")
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     corset_m.stretch(horizontal=0.0, vertical=0.0)

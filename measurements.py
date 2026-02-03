@@ -19,6 +19,8 @@ from typing import ClassVar
 class Measurements:
     """Base class for measurements with stretch support."""
     stretched: bool = field(default=False, kw_only=True)
+    h_factor: float = field(default=1.0, kw_only=True)  # horizontal stretch factor
+    v_factor: float = field(default=1.0, kw_only=True)  # vertical stretch factor
 
     _horizontal: ClassVar[list[str]] = []
     _vertical: ClassVar[list[str]] = []
@@ -32,8 +34,12 @@ class Measurements:
             vertical: Fabric vertical stretch capacity (0.0 = none, 1.0 = 100%)
             usage: How much of the stretch to use (0.5 = 50% for comfort)
         """
+        if self.stretched:
+            raise ValueError("Cannot stretch: measurements have already been stretched")
         h = 1 / (1 + horizontal * usage)
         v = 1 / (1 + vertical * usage)
+        self.h_factor = h  # store for pattern-level use
+        self.v_factor = v
         for field_name in self._horizontal:
             setattr(self, field_name, getattr(self, field_name) * h)
         for field_name in self._vertical:
@@ -78,7 +84,6 @@ class FullMeasurements(Measurements):
         "neck_circumference",         # 9. Tour d'encollure
         "half_back_width",            # 10. 1/2 carrure dos
         "half_front_width",           # 11. 1/2 carrure devant
-        "shoulder_length",            # 12. Longueur d'épaule
         "armhole_circumference",      # 13. Tour d'emmanchure
         "upper_arm",                  # 16. Grosseur de bras
         "wrist",                      # 18. Tour de poignet
@@ -166,7 +171,7 @@ def individual_measurements(person: Person | str) -> FullMeasurements:
                 "small_hip":                94.0,   # 7. Tour des petites hanches
                 "full_hip":                 101.0,  # 8. Tour de bassin
                 # "neck_circumference":       41.0,   # 9. Tour d'encollure
-                "neck_circumference":       38.0,   # 9. Tour d'encollure
+                "neck_circumference":       40.0,   # 9. Tour d'encollure
                 "half_back_width":          19.5,   # 10. 1/2 carrure dos
                 "half_front_width":         18.5,   # 11. 1/2 carrure devant
                 "shoulder_length":          13.0,   # 12. Longueur d'épaule
@@ -252,100 +257,4 @@ class SkirtMeasurements(Measurements):
         )
 
 
-@dataclass
-class CorsetMeasurements(Measurements):
-    """Measurements for corset patterns / Mesures pour patron de corset."""
-    full_bust: float            # tour de poitrine
-    underbust: float            # tour de dessous de poitrine
-    full_waist: float           # tour de taille
-    full_hip: float             # tour de hanches
-    front_waist_length: float   # longueur taille devant
-    back_waist_length: float    # longueur taille dos
-    side_length: float          # longueur côté (aisselle à taille)
-    bust_point_distance: float  # écart poitrine
-    bust_height: float          # hauteur poitrine (épaule à pointe)
-
-    _horizontal: ClassVar[list[str]] = [
-        "full_bust",            # tour de poitrine
-        "underbust",            # tour de dessous de poitrine
-        "full_waist",           # tour de taille
-        "full_hip",             # tour de hanches
-        "bust_point_distance",  # écart poitrine
-    ]
-    _vertical: ClassVar[list[str]] = [
-        "front_waist_length",   # longueur taille devant
-        "back_waist_length",    # longueur taille dos
-        "side_length",          # longueur côté
-        "bust_height",          # hauteur poitrine
-    ]
-
-    @classmethod
-    def from_full(
-        cls,
-        m: FullMeasurements,
-        underbust: float = 74.0,
-        side_length: float | None = None,
-    ) -> CorsetMeasurements:
-        """Create from FullMeasurements."""
-        if side_length is None:
-            side_length = m.underarm_height - 3.0  # approximate
-        return cls(
-            full_bust=m.full_bust,
-            underbust=underbust,
-            full_waist=m.full_waist,
-            full_hip=m.full_hip,
-            front_waist_length=m.front_waist_length,
-            back_waist_length=m.back_waist_length,
-            side_length=side_length,
-            bust_point_distance=m.half_bust_point_distance * 2,
-            bust_height=m.bust_height,
-            stretched=m.stretched,
-        )
-
-
-@dataclass
-class SleeveMeasurements(Measurements):
-    """Measurements for sleeve patterns / Mesures pour patron de manche."""
-    upper_arm: float         # tour de bras
-    elbow: float             # tour de coude
-    wrist: float             # tour de poignet
-    arm_length: float        # longueur de bras
-    underarm_length: float   # longueur de dessous de bras
-    shoulder_to_elbow: float # longueur épaule-coude
-    armhole_depth: float     # profondeur emmanchure
-
-    _horizontal: ClassVar[list[str]] = [
-        "upper_arm",         # tour de bras
-        "elbow",             # tour de coude
-        "wrist",             # tour de poignet
-    ]
-    _vertical: ClassVar[list[str]] = [
-        "arm_length",        # longueur de bras
-        "underarm_length",   # longueur de dessous de bras
-        "shoulder_to_elbow", # longueur épaule-coude
-        "armhole_depth",     # profondeur emmanchure
-    ]
-
-    @classmethod
-    def from_full(
-        cls,
-        m: FullMeasurements,
-        elbow: float | None = None,
-        armhole_depth: float | None = None,
-    ) -> SleeveMeasurements:
-        """Create from FullMeasurements."""
-        if elbow is None:
-            elbow = m.upper_arm * 0.85  # approximate
-        if armhole_depth is None:
-            armhole_depth = m.armhole_circumference / 2  # approximate
-        return cls(
-            upper_arm=m.upper_arm,
-            elbow=elbow,
-            wrist=m.wrist,
-            arm_length=m.arm_length,
-            underarm_length=m.arm_length - m.underarm_height,
-            shoulder_to_elbow=m.elbow_height,
-            armhole_depth=armhole_depth,
-            stretched=m.stretched,
-        )
 
