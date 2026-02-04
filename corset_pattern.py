@@ -24,7 +24,7 @@ class CorsetMeasurements:
     waist_to_hip: float       # Hauteur taille-bassin
 
     neck_width: float         # Largeur de cou
-    neck_back_height: float   # Hauteur de cou, from top back to top of shoulder line
+    neck_back_height: float   # Hauteur de cou
 
     @classmethod
     def from_full_measurements(cls, fm: FullMeasurements):
