@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
 
 from measurements import FullMeasurements
 
@@ -40,7 +41,14 @@ class SleeveBlock:
     def __init__(self, measurements: SleeveMeasurements):
         self.m = measurements
         self.points: dict[str, tuple[float, float]] = {}
+        self.helper_points: dict[str, tuple[float, float]] = {}
         self.calculate_points()
+
+        # Determine plot bounds for PDF
+        all_points = list(self.points.values()) + list(self.helper_points.values())
+        xs = [p[0] for p in all_points]
+        ys = [p[1] for p in all_points]
+        self.bounds = (min(xs) - 5, max(xs) + 5, min(ys) - 5, max(ys) + 5)
 
     def calculate_points(self):
         # Y axis increases downwards (screen coordinates), X increases to the right.
@@ -56,168 +64,170 @@ class SleeveBlock:
         # AI = Height of sleeve cap = 2/3 of Armhole Depth
         cap_height = self.m.construction_armhole_depth
 
-        # --- Rectangle ABCD ---
+        # --- Rectangle ABCD (main points) ---
         self.points['A'] = (0, 0)
         self.points['B'] = (width, 0)
         self.points['C'] = (0, length)
         self.points['D'] = (width, length)
 
-        # --- Center Line EF ---
+        # --- Center Line EF (main points) ---
         self.points['E'] = (width / 2, 0)
         self.points['F'] = (width / 2, length)
 
-        # --- Biceps Line (II') ---
-        # I is on AC, I' is on BD
+        # --- Biceps Line (main points) ---
         self.points['I'] = (0, cap_height)
         self.points['I_prime'] = (width, cap_height)
 
-        # --- Vertical Guides (G and H) ---
-        # G = 1/2 AE. Draw GG' parallel to center.
-        # AE is half width. G is at quarter width.
+        # --- Wrist points (main points) ---
+        half_wrist = self.m.desired_wrist_width / 2
+        self.points['F1'] = (self.points['F'][0] - half_wrist, length)
+        self.points['F2'] = (self.points['F'][0] + half_wrist, length)
+
+        # --- Vertical Guides (helper points) ---
         g_x = width / 4
-        self.points['G'] = (g_x, 0)
-        self.points['G1'] = (g_x, cap_height) # Intersection with biceps line
+        self.helper_points['G'] = (g_x, 0)
+        self.helper_points['G1'] = (g_x, cap_height)
 
-        # H = 1/2 EB. Draw HH' parallel to center.
-        # H is at 3/4 width.
         h_x = (width / 2) + (width / 4)
-        self.points['H'] = (h_x, 0)
-        self.points['H1'] = (h_x, cap_height) # Intersection with biceps line
+        self.helper_points['H'] = (h_x, 0)
+        self.helper_points['H1'] = (h_x, cap_height)
 
-        # --- Cap Curve Construction Points ---
-
-        # GG2 = 1/3 of GG1.
-        # Since G is at y=0 and G1 is at y=cap_height, G2 is down 1/3 of cap_height
+        # --- Cap Curve Construction Points (main points) ---
         self.points['G2'] = (g_x, cap_height / 3)
-
-        # H2 = 1/2 of HH1.
         self.points['H2'] = (h_x, cap_height / 2)
 
-        # G3: Halfway between G2 and I, perpendicular 1cm.
-        # Calculate midpoint first
+        # G3: Halfway between G2 and I, perpendicular 1cm
         mid_g2_i = (
             (self.points['G2'][0] + self.points['I'][0]) / 2,
             (self.points['G2'][1] + self.points['I'][1]) / 2
         )
-        # Perpendicular vector (rotate vector I->G2 90 degrees CCW and scale)
-        # Vector I to G2
         vec_i_g2 = np.array(self.points['G2']) - np.array(self.points['I'])
-        # Normalize
         norm_i_g2 = vec_i_g2 / np.linalg.norm(vec_i_g2)
-        # Rotate -90 degrees (for outward curve relative to the box) -> (y, -x)
         perp_i_g2 = np.array([norm_i_g2[1], -norm_i_g2[0]])
-        # Point G3 is midpoint + 1cm * perp direction
-        # Note: Depending on coord system, might need sign flip.
-        # Here: I is left, G2 is right/up. Vector is (+x, -y). Rotated (-y, -x)?
-        # Visually we want to go Up/Left (Outward).
         self.points['G3'] = tuple(np.array(mid_g2_i) + perp_i_g2 * 1.0)
 
-        # H3: Halfway between H2 and I', perpendicular 1.5cm.
+        # H3: Halfway between H2 and I', perpendicular 1.5cm
         mid_h2_ip = (
             (self.points['H2'][0] + self.points['I_prime'][0]) / 2,
             (self.points['H2'][1] + self.points['I_prime'][1]) / 2
         )
         vec_h2_ip = np.array(self.points['I_prime']) - np.array(self.points['H2'])
         norm_h2_ip = vec_h2_ip / np.linalg.norm(vec_h2_ip)
-        # Rotate 90 degrees (outward/up) -> (-y, x)
         perp_h2_ip = np.array([-norm_h2_ip[1], norm_h2_ip[0]])
         self.points['H3'] = tuple(np.array(mid_h2_ip) + perp_h2_ip * 1.5)
 
-        # --- Elbow Line ---
-        # AJ = Upper arm to elbow (measure usually taken from shoulder tip)
-        # Use elbow_height measurement if available and reasonable
+        # --- Elbow Line (helper points) ---
         elbow_y = self.m.elbow_height if self.m.elbow_height > 0 else 35.0
+        self.helper_points['J'] = (0, elbow_y)
+        self.helper_points['J_prime'] = (width, elbow_y)
 
-        self.points['J'] = (0, elbow_y)
-        self.points['J_prime'] = (width, elbow_y)
+    def generate_curve_points(self):
+        """Returns control points for the sleeve cap curve."""
+        # Path: I -> G3 -> G2 -> E -> H2 -> H3 -> I'
+        return [
+            self.points['I'],
+            self.points['G3'],
+            self.points['G2'],
+            self.points['E'],
+            self.points['H2'],
+            self.points['H3'],
+            self.points['I_prime'],
+        ]
 
-        # --- Wrist / Bottom ---
-        # Distribute sleeve bottom width equally on both sides of F
-        half_wrist = self.m.desired_wrist_width / 2
-        self.points['F1'] = (self.points['F'][0] - half_wrist, length)
-        self.points['F2'] = (self.points['F'][0] + half_wrist, length)
+    def generate_pdf(self, filename="sleeve_pattern.pdf"):
+        """Creates a multi-page PDF with overview and real-size pattern."""
+        pp = PdfPages(filename)
 
-    def generate_curve_points(self, num_points=20):
-        """Generates smooth curve for the cap."""
-        # We need a spline or bezier through I -> G3 -> G2 -> E -> H2 -> H3 -> I'
-        # For simplicity in this script, we just return the key control points sorted X
-        keys = ['I', 'G3', 'G2', 'E', 'H2', 'H3', 'I_prime']
-        return [self.points[k] for k in keys]
+        # --- Page 1: A4 Overview with Coordinates ---
+        fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 size in inches
+        self._plot_pattern(ax, annotate=True)
+        ax.set_title(f"Jersey Set-In Sleeve Block - Overview\n"
+                     f"Armhole: {self.m.armhole_circumference}cm | Arm Length: {self.m.arm_length}cm")
+        pp.savefig(fig)
+        plt.close()
 
-    def export_pdf(self, filename="sleeve_pattern.pdf", paper_format="A4"):
-        """
-        Creates a PDF using Matplotlib.
-        """
-        fig, ax = plt.subplots(figsize=(8.27, 11.69)) # A4 size in inches
+        # --- Page 2: Real Size (1:1 scale) ---
+        width_cm = self.bounds[1] - self.bounds[0]
+        height_cm = self.bounds[3] - self.bounds[2]
+        fig_real, ax_real = plt.subplots(figsize=(width_cm / 2.54, height_cm / 2.54))
 
-        # Extract coordinates
+        self._plot_pattern(ax_real, annotate=False)
+        ax_real.set_title("Real Size Pattern (Print at 100%)")
+        pp.savefig(fig_real)
+        plt.close()
+
+        pp.close()
+        print(f"Pattern generated: {filename}")
+
+    def _plot_pattern(self, ax, annotate=True):
+        """Plot the sleeve pattern on the given axes."""
+        ax.set_aspect('equal')
+
         pts = self.points
+        helper = self.helper_points
 
-        # 1. Draw Frame (Construction lines - dashed)
-        frame_keys = ['A', 'B', 'D', 'C', 'A']
-        ax.plot([pts[k][0] for k in frame_keys], [pts[k][1] for k in frame_keys], 'k--', linewidth=0.5, label='Construction Box')
+        # Helper to draw line between points
+        def draw_line(p1, p2, style='-', color='black', linewidth=1):
+            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], linestyle=style, color=color, linewidth=linewidth)
 
-        # 2. Draw Internal Guides
-        ax.plot([pts['E'][0], pts['F'][0]], [pts['E'][1], pts['F'][1]], 'k-.', linewidth=0.5) # Center
-        ax.plot([pts['I'][0], pts['I_prime'][0]], [pts['I'][1], pts['I_prime'][1]], 'k:', linewidth=0.5) # Biceps
-        ax.plot([pts['J'][0], pts['J_prime'][0]], [pts['J'][1], pts['J_prime'][1]], 'k:', linewidth=0.5) # Elbow
+        # --- Construction Grid (dashed gray) ---
+        # Frame
+        draw_line(pts['A'], pts['B'], '--', 'gray')
+        draw_line(pts['B'], pts['D'], '--', 'gray')
+        draw_line(pts['D'], pts['C'], '--', 'gray')
+        draw_line(pts['C'], pts['A'], '--', 'gray')
+
+        # Center line
+        draw_line(pts['E'], pts['F'], '--', 'gray')
+
+        # Biceps line
+        draw_line(pts['I'], pts['I_prime'], '--', 'gray')
+
+        # Elbow line
+        draw_line(helper['J'], helper['J_prime'], '--', 'gray')
 
         # Vertical cap guides
-        ax.plot([pts['G'][0], pts['G1'][0]], [pts['G'][1], pts['G1'][1]], 'k:', linewidth=0.3)
-        ax.plot([pts['H'][0], pts['H1'][0]], [pts['H'][1], pts['H1'][1]], 'k:', linewidth=0.3)
+        draw_line(helper['G'], helper['G1'], ':', 'gray', 0.5)
+        draw_line(helper['H'], helper['H1'], ':', 'gray', 0.5)
 
-        # 3. Draw Final Outline (Solid)
+        # --- Final Outline (solid blue) ---
         # Underarm seams
-        ax.plot([pts['I'][0], pts['F1'][0]], [pts['I'][1], pts['F1'][1]], 'k-', linewidth=1.5)
-        ax.plot([pts['I_prime'][0], pts['F2'][0]], [pts['I_prime'][1], pts['F2'][1]], 'k-', linewidth=1.5)
-        # Wrist
-        ax.plot([pts['F1'][0], pts['F2'][0]], [pts['F1'][1], pts['F2'][1]], 'k-', linewidth=1.5)
+        draw_line(pts['I'], pts['F1'], '-', 'blue')
+        draw_line(pts['I_prime'], pts['F2'], '-', 'blue')
 
-        # Cap Curve (Polyline for now, ideally spline)
+        # Wrist
+        draw_line(pts['F1'], pts['F2'], '-', 'blue')
+
+        # Cap Curve
         curve_pts = self.generate_curve_points()
         cx, cy = zip(*curve_pts)
 
-        # Use scipy for smoothing if available, else straight lines
         try:
             from scipy.interpolate import make_interp_spline
-            # Sort by X to avoid loops in spline calculation if points aren't strictly ordered
-            # But here they are ordered by path. We use parameterization.
             t = np.arange(len(curve_pts))
-            spl = make_interp_spline(t, np.c_[cx, cy], k=3) # Cubic spline
+            spl = make_interp_spline(t, np.c_[cx, cy], k=3)
             t_new = np.linspace(t.min(), t.max(), 300)
             smooth_curve = spl(t_new)
-            ax.plot(smooth_curve[:, 0], smooth_curve[:, 1], 'k-', linewidth=1.5)
+            ax.plot(smooth_curve[:, 0], smooth_curve[:, 1], '-', color='blue', linewidth=1)
         except ImportError:
-            # Fallback to straight lines connecting control points
-            ax.plot(cx, cy, 'r-', linewidth=1.5, alpha=0.7)
-            print("Install scipy for smooth curves.")
+            ax.plot(cx, cy, '-', color='blue', linewidth=1)
 
-        # 4. Annotate Points
+        # --- Plot main points ---
         for name, coord in pts.items():
-            if name in ['A', 'B', 'C', 'D', 'E', 'F', 'I', 'I_prime', 'F1', 'F2']:
-                ax.text(coord[0], coord[1], f" {name}", fontsize=8, color='blue')
+            ax.plot(coord[0], coord[1], 'o', color='black', markersize=3)
+            if annotate:
+                ax.text(coord[0] + 0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", fontsize=8)
 
-        # Formatting
-        ax.set_aspect('equal')
-        ax.invert_yaxis() # Computer graphics convention vs sewing convention
-        ax.set_title("Jersey Set-In Sleeve Block")
-        ax.set_xlabel("Width (cm)")
-        ax.set_ylabel("Length (cm)")
-        ax.grid(True, linestyle=':', alpha=0.6)
+        # --- Plot helper points (smaller, gray, no coordinates) ---
+        for name, coord in helper.items():
+            ax.plot(coord[0], coord[1], 'o', color='gray', markersize=2)
+            if annotate:
+                ax.text(coord[0] + 0.5, coord[1], name, fontsize=8, color='gray')
 
-        # Write measurements on side
-        info_text = (
-            f"Measurements:\n"
-            f"Armhole Circ: {self.m.armhole_circumference}cm\n"
-            f"Arm Length: {self.m.arm_length}cm\n"
-            f"Calculated Depth: {self.m.construction_armhole_depth:.1f}cm\n"
-            f"Sleeve Width: {pts['B'][0]:.1f}cm"
-        )
-        plt.figtext(0.02, 0.02, info_text, fontsize=8, bbox=dict(facecolor='white', alpha=0.8))
-
-        plt.savefig(filename, format='pdf')
-        print(f"Pattern saved to {filename}")
-        plt.close()
+        # --- Add scale reference ---
+        min_y = min(pts['C'][1], pts['D'][1])
+        ax.plot([0, 10], [min_y + 3, min_y + 3], linewidth=4, color='black')
+        ax.text(5, min_y + 5, "10 cm Scale", ha='center')
 
     def print_coordinates(self):
         print(f"{'POINT':<10} {'X (cm)':<10} {'Y (cm)':<10}")
@@ -241,7 +251,9 @@ if __name__ == "__main__":
     pattern = SleeveBlock(sleeve_m)
 
     # Output 1: Coordinates
-    pattern.print_coordinates()
+    print("Construction Points:")
+    for name, p in pattern.points.items():
+        print(f"{name}: x={p[0]:.2f}, y={p[1]:.2f}")
 
     # Output 2: PDF
-    pattern.export_pdf("Sleeve_Pattern.pdf")
+    pattern.generate_pdf("Sleeve_Pattern.pdf")
