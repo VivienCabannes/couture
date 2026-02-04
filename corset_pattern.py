@@ -297,7 +297,7 @@ if __name__ == "__main__":
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     pattern = CorsetPattern(corset_m)
-    pattern.stretch(horizontal=0.2, vertical=0.1)
+    pattern.stretch(horizontal=.25, vertical=0.1)
     
     # Print Coordinates
     print("Construction Points:")

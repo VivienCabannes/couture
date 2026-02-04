@@ -1,5 +1,6 @@
 Review the stretching,
-    - may modify C2, do C2 at full bust, together with B1C2 = underarm_height
+    - Correct the curved curves with Beziers, add control points. Control points should be shown as "helper points", some of the previous helper points may be removed.
+    - Add armhole_depth, and armhole_measurements on the pdf
     - may want to add some margin in the corset construction in some places
     - need to modify the rendering (in particular the rendering should be invariant to the stretching).
 

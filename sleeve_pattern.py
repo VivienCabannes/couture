@@ -235,9 +235,11 @@ class SleevePattern(StretchPattern):
 if __name__ == "__main__":
     # Sleeve measurements come from bodice construction
     sleeve_m = SleeveMeasurements(
-        armhole_depth=18.5,
-        armhole_measurement=41.5,
-        sleeve_length=60.0,
+        # armhole_depth=18.5,
+        armhole_depth=41.5 - 22,
+        # armhole_measurement=41.5,
+        armhole_measurement=45,
+        sleeve_length=66.0,
         upper_arm_to_elbow=35.0,
         sleeve_bottom_width=20.0,
     )
@@ -245,7 +247,7 @@ if __name__ == "__main__":
     pattern = SleevePattern(sleeve_m)
 
     # Apply stretch for jersey fabric (e.g., 30% horizontal, 20% vertical stretch)
-    pattern.stretch(horizontal=0.3, vertical=0.0)
+    pattern.stretch(horizontal=0.25, vertical=0.1)
 
     # Output 1: Coordinates
     print("Construction Points:")
