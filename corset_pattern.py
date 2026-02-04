@@ -1,15 +1,15 @@
 from dataclasses import dataclass, fields
-from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
-from measurements import FullMeasurements, Measurements
+from measurements import FullMeasurements
+from stretch_pattern import StretchPattern
 
 
 @dataclass
-class CorsetMeasurements(Measurements):
+class CorsetMeasurements:
     """Subset of measurements specifically required for this corset draft."""
     back_waist_length: float  # Longueur taille dos
     front_waist_length: float # Longueur taille devant
@@ -25,23 +25,6 @@ class CorsetMeasurements(Measurements):
 
     neck_width: float         # Largeur de cou
     neck_back_height: float   # Hauteur de cou, from top back to top of shoulder line
-
-    _horizontal: ClassVar[list[str]] = [
-        "full_bust",          # Tour de poitrine
-        "full_waist",         # Tour de taille
-        "full_hip",           # Tour de bassin
-        "half_back_width",    # 1/2 carrure dos
-        "half_front_width",   # 1/2 carrure devant
-        "neck_width",         # Largeur de cou
-    ]
-    _vertical: ClassVar[list[str]] = [
-        "back_waist_length",  # Longueur taille dos
-        "front_waist_length", # Longueur taille devant
-        "bust_height",        # Hauteur de poitrine
-        "underarm_height",    # Hauteur de dessous de bras
-        "waist_to_hip",       # Hauteur taille-bassin
-        "neck_back_height",   # Hauteur de cou
-    ]
 
     @classmethod
     def from_full_measurements(cls, fm: FullMeasurements):
@@ -69,21 +52,16 @@ class CorsetMeasurements(Measurements):
         kwargs['neck_back_height'] = neck_back_height 
         kwargs['neck_width'] = (lo + hi) / 2
 
-        return cls(**kwargs, stretched=fm.stretched)
+        return cls(**kwargs)
 
 
-class CorsetPattern:
+class CorsetPattern(StretchPattern):
     def __init__(self, measurements: CorsetMeasurements):
-        self.m = measurements
-        self.points = {}
-        self.helper_points = {}
-        self.build_construction_points()
+        super().__init__()
         
-        # Determine plot bounds for PDF
+        self.m = measurements
+        self.build_construction_points()
         print(self.points)
-        xs = [p[0] for p in self.points.values()]
-        ys = [p[1] for p in self.points.values()]
-        self.bounds = (min(xs)-5, max(xs)+5, min(ys)-5, max(ys)+5)
 
     def build_construction_points(self):
         # Waist as the reference
@@ -137,15 +115,17 @@ class CorsetPattern:
         self.points['D1'] = self.points['D'] - np.array([width, 0])
         width = self.m.half_back_width
         self.points['D2'] = self.points['D'] - np.array([width, 0])
-        # Shoulder construction with component-wise stretch
+        # Shoulder top
         # J is 1/3 of the way from G to H
         self.helper_points['J'] = (2 * self.helper_points['G'] + self.points['H']) / 3
-        # Recover unstretched width from unstretched height before stretching it
-        HJ_unstretched = (self.points['H'][1] - self.helper_points['J'][1]) / self.m.v_factor
-        width = np.sqrt(self.m.shoulder_length ** 2 - HJ_unstretched ** 2) * self.m.h_factor
+        width = np.sqrt(self.m.shoulder_length ** 2 - (self.points['H'][1] - self.helper_points['J'][1]) ** 2)
         self.points['K'] = self.helper_points['J'] - np.array([width, 0])
 
     def generate_pdf(self, filename="corset_pattern.pdf"):
+        xs = [p[0] for p in self.points.values()]
+        ys = [p[1] for p in self.points.values()]
+        self.bounds = (min(xs)-5, max(xs)+5, min(ys)-5, max(ys)+5)
+
         pp = PdfPages(filename)
         
         # --- Page 1: A4 Overview with Coordinates ---
@@ -319,8 +299,8 @@ if __name__ == "__main__":
     fm = individual_measurements("vivien")
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
-    corset_m.stretch(horizontal=0.0, vertical=0.0)
     pattern = CorsetPattern(corset_m)
+    pattern.stretch(horizontal=3.0, vertical=0.0)
     
     # Print Coordinates
     print("Construction Points:")

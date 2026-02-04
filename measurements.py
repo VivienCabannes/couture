@@ -10,45 +10,13 @@ TODO:
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum, auto
 from typing import ClassVar
 
 
 @dataclass
-class Measurements:
-    """Base class for measurements with stretch support."""
-    stretched: bool = field(default=False, kw_only=True)
-    h_factor: float = field(default=1.0, kw_only=True)  # horizontal stretch factor
-    v_factor: float = field(default=1.0, kw_only=True)  # vertical stretch factor
-
-    _horizontal: ClassVar[list[str]] = []
-    _vertical: ClassVar[list[str]] = []
-
-    def stretch(self, horizontal: float = 0.0, vertical: float = 0.0, usage: float = 1) -> None:
-        """
-        Apply stretch factors in place.
-
-        Args:
-            horizontal: Fabric horizontal stretch capacity (0.0 = none, 1.0 = 100%)
-            vertical: Fabric vertical stretch capacity (0.0 = none, 1.0 = 100%)
-            usage: How much of the stretch to use (0.5 = 50% for comfort)
-        """
-        if self.stretched:
-            raise ValueError("Cannot stretch: measurements have already been stretched")
-        h = 1 / (1 + horizontal * usage)
-        v = 1 / (1 + vertical * usage)
-        self.h_factor = h  # store for pattern-level use
-        self.v_factor = v
-        for field_name in self._horizontal:
-            setattr(self, field_name, getattr(self, field_name) * h)
-        for field_name in self._vertical:
-            setattr(self, field_name, getattr(self, field_name) * v)
-        self.stretched = True
-
-
-@dataclass
-class FullMeasurements(Measurements):
+class FullMeasurements:
     """Complete body measurements in centimeters (French sizing table)."""
     back_waist_length: float          # 1. Longueur taille dos
     front_waist_length: float         # 2. Longueur taille devant
@@ -220,41 +188,3 @@ def individual_measurements(person: Person | str) -> FullMeasurements:
             raise NotImplementedError("Unknown Person")
 
     return FullMeasurements(**measurements)
-
-
-@dataclass
-class SkirtMeasurements(Measurements):
-    """Measurements for skirt patterns / Mesures pour patron de jupe."""
-    full_waist: float      # tour de taille
-    full_hip: float        # tour de hanches
-    waist_to_hip: float    # hauteur taille-hanches
-    waist_to_knee: float   # hauteur taille-genou
-    waist_to_floor: float  # hauteur taille-sol
-    skirt_length: float    # longueur jupe
-
-    _horizontal: ClassVar[list[str]] = [
-        "full_waist",      # tour de taille
-        "full_hip",        # tour de hanches
-    ]
-    _vertical: ClassVar[list[str]] = [
-        "waist_to_hip",    # hauteur taille-hanches
-        "waist_to_knee",   # hauteur taille-genou
-        "waist_to_floor",  # hauteur taille-sol
-        "skirt_length",    # longueur jupe
-    ]
-
-    @classmethod
-    def from_full(cls, m: FullMeasurements, skirt_length: float = 65.0) -> SkirtMeasurements:
-        """Create from FullMeasurements."""
-        return cls(
-            full_waist=m.full_waist,
-            full_hip=m.full_hip,
-            waist_to_hip=m.waist_to_hip,
-            waist_to_knee=m.waist_to_knee,
-            waist_to_floor=m.waist_to_floor,
-            skirt_length=skirt_length,
-            stretched=m.stretched,
-        )
-
-
-
