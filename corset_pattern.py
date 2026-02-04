@@ -267,9 +267,6 @@ class CorsetPattern(StretchPattern):
         p2_c2k = p3_c2k + perp_hk * dist_d1_k * 0.8
         draw_bezier(p0_c2k, p1_c2k, p2_c2k, p3_c2k, '-', 'blue')
         
-        # Back Reference
-        draw_line('F', 'I', '-', 'red')
-        draw_line('I', 'H', ':', 'red') # Back neck approx join
         
         # Plot points
         for name, coord in pts.items():
@@ -300,7 +297,7 @@ if __name__ == "__main__":
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     pattern = CorsetPattern(corset_m)
-    pattern.stretch(horizontal=3.0, vertical=0.0)
+    pattern.stretch(horizontal=0.2, vertical=0.1)
     
     # Print Coordinates
     print("Construction Points:")

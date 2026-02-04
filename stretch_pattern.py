@@ -1,3 +1,6 @@
+import numpy as np
+from numpy.typing import NDArray
+
 
 class StretchPattern:
     """Base class for pattern with stretch support."""
@@ -5,8 +8,8 @@ class StretchPattern:
         self.stretched: bool = False
         self.h_factor: float = 1.0
         self.v_factor: float = 1.0
-        self.points: dict[str, tuple[int, int]] = {}
-        self.helper_points: dict[str, tuple[int, int]] = {}
+        self.points: dict[str, NDArray[np.float64]] = {}
+        self.helper_points: dict[str, NDArray[np.float64]] = {}
 
     def stretch(self, horizontal: float = 0.0, vertical: float = 0.0, usage: float = 1) -> None:
         """
