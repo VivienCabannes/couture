@@ -4,37 +4,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 
-from measurements import FullMeasurements
-
 
 @dataclass
 class SleeveMeasurements:
-    """Subset of measurements specifically required for the sleeve draft."""
-    armhole_circumference: float  # Tour d'emmanchure
-    underarm_height: float        # Hauteur dessous de bras
-    arm_length: float             # Longueur de bras
-    elbow_height: float           # Hauteur coude
-    wrist: float                  # Tour de poignet
+    """Measurements required for the jersey set-in sleeve block.
 
-    @classmethod
-    def from_full_measurements(cls, fm: FullMeasurements) -> "SleeveMeasurements":
-        return cls(
-            armhole_circumference=fm.armhole_circumference,
-            underarm_height=fm.underarm_height,
-            arm_length=fm.arm_length,
-            elbow_height=fm.elbow_height,
-            wrist=fm.wrist,
-        )
-
-    @property
-    def construction_armhole_depth(self) -> float:
-        """Armhole depth for construction = 2/3 of underarm height."""
-        return (2 / 3) * self.underarm_height
-
-    @property
-    def desired_wrist_width(self) -> float:
-        """Wrist width with ease for sleeve bottom."""
-        return self.wrist + 4.0  # 4cm ease
+    These measurements come from bodice construction, not body measurements.
+    """
+    armhole_depth: float           # Profondeur d'emmanchure (from bodice construction)
+    armhole_measurement: float     # Total armhole (front + back armhole lengths)
+    sleeve_length: float = 60.0    # Longueur de manche (AC = 60 cm default)
+    upper_arm_to_elbow: float = 35.0  # Distance from shoulder to elbow (AJ = 35 cm default)
+    sleeve_bottom_width: float = 20.0  # Largeur bas de manche (configurable)
 
 
 class SleeveBlock:
@@ -56,13 +37,13 @@ class SleeveBlock:
 
         # --- Dimensions ---
         # AB = Sleeve Width = 3/4 Armhole Measurement + 1cm
-        width = (0.75 * self.m.armhole_circumference) + 1.0
+        width = (0.75 * self.m.armhole_measurement) + 1.0
 
         # AC = Sleeve Length
-        length = self.m.arm_length
+        length = self.m.sleeve_length
 
         # AI = Height of sleeve cap = 2/3 of Armhole Depth
-        cap_height = self.m.construction_armhole_depth
+        cap_height = (2 / 3) * self.m.armhole_depth
 
         # --- Rectangle ABCD (main points) ---
         self.points['A'] = (0, 0)
@@ -76,10 +57,10 @@ class SleeveBlock:
 
         # --- Biceps Line (main points) ---
         self.points['I'] = (0, cap_height)
-        self.points['I_prime'] = (width, cap_height)
+        self.points["I'"] = (width, cap_height)
 
         # --- Wrist points (main points) ---
-        half_wrist = self.m.desired_wrist_width / 2
+        half_wrist = self.m.sleeve_bottom_width / 2
         self.points['F1'] = (self.points['F'][0] - half_wrist, length)
         self.points['F2'] = (self.points['F'][0] + half_wrist, length)
 
@@ -103,23 +84,23 @@ class SleeveBlock:
         )
         vec_i_g2 = np.array(self.points['G2']) - np.array(self.points['I'])
         norm_i_g2 = vec_i_g2 / np.linalg.norm(vec_i_g2)
-        perp_i_g2 = np.array([norm_i_g2[1], -norm_i_g2[0]])
+        perp_i_g2 = np.array([-norm_i_g2[1], norm_i_g2[0]])
         self.points['G3'] = tuple(np.array(mid_g2_i) + perp_i_g2 * 1.0)
 
         # H3: Halfway between H2 and I', perpendicular 1.5cm
         mid_h2_ip = (
-            (self.points['H2'][0] + self.points['I_prime'][0]) / 2,
-            (self.points['H2'][1] + self.points['I_prime'][1]) / 2
+            (self.points['H2'][0] + self.points["I'"][0]) / 2,
+            (self.points['H2'][1] + self.points["I'"][1]) / 2
         )
-        vec_h2_ip = np.array(self.points['I_prime']) - np.array(self.points['H2'])
+        vec_h2_ip = np.array(self.points["I'"]) - np.array(self.points['H2'])
         norm_h2_ip = vec_h2_ip / np.linalg.norm(vec_h2_ip)
         perp_h2_ip = np.array([-norm_h2_ip[1], norm_h2_ip[0]])
         self.points['H3'] = tuple(np.array(mid_h2_ip) + perp_h2_ip * 1.5)
 
         # --- Elbow Line (helper points) ---
-        elbow_y = self.m.elbow_height if self.m.elbow_height > 0 else 35.0
+        elbow_y = self.m.upper_arm_to_elbow
         self.helper_points['J'] = (0, elbow_y)
-        self.helper_points['J_prime'] = (width, elbow_y)
+        self.helper_points["J'"] = (width, elbow_y)
 
     def generate_curve_points(self):
         """Returns control points for the sleeve cap curve."""
@@ -131,7 +112,7 @@ class SleeveBlock:
             self.points['E'],
             self.points['H2'],
             self.points['H3'],
-            self.points['I_prime'],
+            self.points["I'"],
         ]
 
     def generate_pdf(self, filename="sleeve_pattern.pdf"):
@@ -142,7 +123,7 @@ class SleeveBlock:
         fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4 size in inches
         self._plot_pattern(ax, annotate=True)
         ax.set_title(f"Jersey Set-In Sleeve Block - Overview\n"
-                     f"Armhole: {self.m.armhole_circumference}cm | Arm Length: {self.m.arm_length}cm")
+                     f"Armhole: {self.m.armhole_measurement}cm | Sleeve Length: {self.m.sleeve_length}cm")
         pp.savefig(fig)
         plt.close()
 
@@ -162,6 +143,7 @@ class SleeveBlock:
     def _plot_pattern(self, ax, annotate=True):
         """Plot the sleeve pattern on the given axes."""
         ax.set_aspect('equal')
+        ax.invert_yaxis()  # A at top, C at bottom
 
         pts = self.points
         helper = self.helper_points
@@ -181,10 +163,10 @@ class SleeveBlock:
         draw_line(pts['E'], pts['F'], '--', 'gray')
 
         # Biceps line
-        draw_line(pts['I'], pts['I_prime'], '--', 'gray')
+        draw_line(pts['I'], pts["I'"], '--', 'gray')
 
         # Elbow line
-        draw_line(helper['J'], helper['J_prime'], '--', 'gray')
+        draw_line(helper['J'], helper["J'"], '--', 'gray')
 
         # Vertical cap guides
         draw_line(helper['G'], helper['G1'], ':', 'gray', 0.5)
@@ -193,7 +175,7 @@ class SleeveBlock:
         # --- Final Outline (solid blue) ---
         # Underarm seams
         draw_line(pts['I'], pts['F1'], '-', 'blue')
-        draw_line(pts['I_prime'], pts['F2'], '-', 'blue')
+        draw_line(pts["I'"], pts['F2'], '-', 'blue')
 
         # Wrist
         draw_line(pts['F1'], pts['F2'], '-', 'blue')
@@ -239,21 +221,20 @@ class SleeveBlock:
 # --- Example Usage ---
 
 if __name__ == "__main__":
-    from measurements import default_measurements, individual_measurements
-
-    # Get full measurements (can use default_measurements(size=38) or individual)
-    fm = default_measurements(size=38)
-    # fm = individual_measurements("vivien")
-
-    # Create sleeve-specific measurements from full measurements
-    sleeve_m = SleeveMeasurements.from_full_measurements(fm)
+    # Sleeve measurements come from bodice construction
+    sleeve_m = SleeveMeasurements(
+        armhole_depth=18.5,
+        armhole_measurement=41.5,
+        sleeve_length=60.0,
+        upper_arm_to_elbow=35.0,
+        sleeve_bottom_width=20.0,
+    )
 
     pattern = SleeveBlock(sleeve_m)
 
     # Output 1: Coordinates
     print("Construction Points:")
-    for name, p in pattern.points.items():
-        print(f"{name}: x={p[0]:.2f}, y={p[1]:.2f}")
+    pattern.print_coordinates()
 
     # Output 2: PDF
     pattern.generate_pdf("Sleeve_Pattern.pdf")
