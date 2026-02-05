@@ -22,6 +22,8 @@ ENV/
 
 # Generated pattern images
 *.png
+*.pdf
+*.svg
 
 # OS
 .DS_Store
