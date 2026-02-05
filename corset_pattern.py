@@ -1,3 +1,4 @@
+import warnings
 from dataclasses import dataclass, fields
 
 import matplotlib.pyplot as plt
@@ -209,6 +210,51 @@ class CorsetPattern(StretchPattern):
             KX = K + lambda_val * perp_kh
             self.helper_points[f'K{x}'] = KX
 
+    def _validate_bezier_crossing(self, p0, p1, p2, p3, curve_name=None):
+        """Validate that a Bezier curve does not cross the P0-P1 or P3-P2 lines.
+
+        Uses analytical O(1) formula based on cross products.
+        Checks both ends of the curve.
+        """
+        curve_id = curve_name if curve_name else "unnamed"
+        valid = True
+
+        # Check P0-P1 line crossing
+        v1 = p1 - p0  # Direction P0 -> P1
+        if np.linalg.norm(v1) >= 1e-10:
+            # Compute cross products for P2 and P3 relative to P0-P1 line
+            v2 = p2 - p0
+            v3 = p3 - p0
+            c2 = v2[0] * v1[1] - v2[1] * v1[0]  # cross(P2-P0, P1-P0)
+            c3 = v3[0] * v1[1] - v3[1] * v1[0]  # cross(P3-P0, P1-P0)
+
+            # Curve crosses the line if c2 and c3 have opposite signs
+            if c2 * c3 < 0:
+                warnings.warn(
+                    f"Bezier curve '{curve_id}' crosses the P0-P1 line",
+                    UserWarning
+                )
+                valid = False
+
+        # Check P3-P2 line crossing
+        v1_end = p2 - p3  # Direction P3 -> P2
+        if np.linalg.norm(v1_end) >= 1e-10:
+            # Compute cross products for P0 and P1 relative to P3-P2 line
+            v0 = p0 - p3
+            v1_pt = p1 - p3
+            c0 = v0[0] * v1_end[1] - v0[1] * v1_end[0]  # cross(P0-P3, P2-P3)
+            c1 = v1_pt[0] * v1_end[1] - v1_pt[1] * v1_end[0]  # cross(P1-P3, P2-P3)
+
+            # Curve crosses the line if c0 and c1 have opposite signs
+            if c0 * c1 < 0:
+                warnings.warn(
+                    f"Bezier curve '{curve_id}' crosses the P3-P2 line",
+                    UserWarning
+                )
+                valid = False
+
+        return valid
+
     def _mirror_point(self, p):
         """Mirror a point for back pattern (flip x, add offset)."""
         gap = getattr(self, 'pattern_gap', 5.0)
@@ -220,8 +266,9 @@ class CorsetPattern(StretchPattern):
         if k1 in pts and k2 in pts:
             ax.plot([pts[k1][0], pts[k2][0]], [pts[k1][1], pts[k2][1]], linestyle=style, color=color, linewidth=1)
 
-    def _draw_bezier(self, ax, p0, p1, p2, p3, style='-', color='black', num_points=100):
+    def _draw_bezier(self, ax, p0, p1, p2, p3, style='-', color='black', num_points=100, curve_name=None):
         """Draw cubic Bezier curve."""
+        self._validate_bezier_crossing(p0, p1, p2, p3, curve_name)
         t = np.linspace(0, 1, num_points)
         curve = (1-t)[:, np.newaxis]**3 * p0 + \
                 3*(1-t)[:, np.newaxis]**2 * t[:, np.newaxis] * p1 + \
@@ -242,7 +289,7 @@ class CorsetPattern(StretchPattern):
         unit_be = vec_be / np.linalg.norm(vec_be)
         control_dist_b1 = np.linalg.norm(p3_a1b1 - p0_a1b1) / 3
         p2_a1b1 = p3_a1b1 - unit_be * control_dist_b1
-        self._draw_bezier(ax, p0_a1b1, p1_a1b1, p2_a1b1, p3_a1b1, '-', 'blue')
+        self._draw_bezier(ax, p0_a1b1, p1_a1b1, p2_a1b1, p3_a1b1, '-', 'blue', curve_name='front_side_A1_B1')
 
         # B1 to C1
         p0_b1c1 = pts['B1']
@@ -252,7 +299,7 @@ class CorsetPattern(StretchPattern):
         dist_b1c1 = np.linalg.norm(vec_b1c1)
         unit_b1c1 = vec_b1c1 / dist_b1c1
         p2_b1c1 = p3_b1c1 - unit_b1c1 * (dist_b1c1 * 0.3)
-        self._draw_bezier(ax, p0_b1c1, p1_b1c1, p2_b1c1, p3_b1c1, '-', 'blue')
+        self._draw_bezier(ax, p0_b1c1, p1_b1c1, p2_b1c1, p3_b1c1, '-', 'blue', curve_name='front_side_B1_C1')
 
         # Center line: A → E (vertical)
         ax.plot([pts['A'][0], pts['E'][0]], [pts['A'][1], pts['E'][1]], '-', color='blue', linewidth=1)
@@ -265,13 +312,13 @@ class CorsetPattern(StretchPattern):
         p3_he = pts['E']
         p1_he = self.helper_points['H1']
         p2_he = self.helper_points['E1']
-        self._draw_bezier(ax, p0_he, p1_he, p2_he, p3_he, '-', 'blue')
+        self._draw_bezier(ax, p0_he, p1_he, p2_he, p3_he, '-', 'blue', curve_name='front_neck_H_E')
 
         # Shoulder: H → K
         ax.plot([pts['H'][0], pts['K'][0]], [pts['H'][1], pts['K'][1]], '-', color='blue', linewidth=1)
 
         # Armhole: K → C1 through D1
-        self._draw_bezier(ax, pts['K'], self.helper_points['K1'], self.helper_points['C11'], pts['C1'], '-', 'blue')
+        self._draw_bezier(ax, pts['K'], self.helper_points['K1'], self.helper_points['C11'], pts['C1'], '-', 'blue', curve_name='front_armhole_K_C1')
 
     def _plot_back_curves(self, ax):
         """Draw back pattern curves (green)."""
@@ -291,7 +338,7 @@ class CorsetPattern(StretchPattern):
         m_unit_be = m_vec_be / np.linalg.norm(m_vec_be)
         m_control_dist_b1 = np.linalg.norm(m_p3_a1b1 - m_p0_a1b1) / 3
         m_p2_a1b1 = m_p3_a1b1 - m_unit_be * m_control_dist_b1
-        self._draw_bezier(ax, m_p0_a1b1, m_p1_a1b1, m_p2_a1b1, m_p3_a1b1, '-', 'green')
+        self._draw_bezier(ax, m_p0_a1b1, m_p1_a1b1, m_p2_a1b1, m_p3_a1b1, '-', 'green', curve_name='back_side_A1_B1')
 
         # B1 to C1 (mirrored)
         m_p0_b1c1 = m_B1
@@ -301,7 +348,7 @@ class CorsetPattern(StretchPattern):
         m_dist_b1c1 = np.linalg.norm(m_vec_b1c1)
         m_unit_b1c1 = m_vec_b1c1 / m_dist_b1c1
         m_p2_b1c1 = m_p3_b1c1 - m_unit_b1c1 * (m_dist_b1c1 * 0.3)
-        self._draw_bezier(ax, m_p0_b1c1, m_p1_b1c1, m_p2_b1c1, m_p3_b1c1, '-', 'green')
+        self._draw_bezier(ax, m_p0_b1c1, m_p1_b1c1, m_p2_b1c1, m_p3_b1c1, '-', 'green', curve_name='back_side_B1_C1')
 
         # Center line: A → F (vertical, mirrored)
         m_A = self._mirror_point(pts['A'])
@@ -317,7 +364,7 @@ class CorsetPattern(StretchPattern):
         m_p3_hf = m_F
         m_p1_hf = self._mirror_point(self.helper_points['H2'])
         m_p2_hf = self._mirror_point(self.helper_points['F1'])
-        self._draw_bezier(ax, m_p0_hf, m_p1_hf, m_p2_hf, m_p3_hf, '-', 'green')
+        self._draw_bezier(ax, m_p0_hf, m_p1_hf, m_p2_hf, m_p3_hf, '-', 'green', curve_name='back_neck_H_F')
 
         # Shoulder: H → K (mirrored)
         m_K = self._mirror_point(pts['K'])
@@ -326,7 +373,7 @@ class CorsetPattern(StretchPattern):
         # Armhole: K → C1 through D2 (mirrored)
         m_K2 = self._mirror_point(self.helper_points['K2'])
         m_C12 = self._mirror_point(self.helper_points['C12'])
-        self._draw_bezier(ax, m_K, m_K2, m_C12, m_C1, '-', 'green')
+        self._draw_bezier(ax, m_K, m_K2, m_C12, m_C1, '-', 'green', curve_name='back_armhole_K_C1')
 
     def _plot_reference(self, ax):
         """Plot reference sheet with coordinates for manual drawing."""
