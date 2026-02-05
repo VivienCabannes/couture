@@ -1,3 +1,14 @@
+renaming neck_center_strength
+renaming neck_shoulder_strength
+
+Same convention for the other armhole_shoulder_strength, armholde_side_strength, armhole_middle_up_strength, ...
+
+Add waist, bust and shoulder level
+
+Clean coordinates rendering
+
+Option to export SVG and other format that are standard in the industry.
+
 Review the stretching,
     - Correct the curved curves with Beziers, add control points. Control points should be shown as "helper points", some of the previous helper points may be removed.
     - Add armhole_depth, and armhole_measurements on the pdf
