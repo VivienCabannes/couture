@@ -1,13 +1,13 @@
-import io
 import warnings
 from dataclasses import dataclass, fields
 
-import matplotlib.pyplot as plt
 import numpy as np
-from scipy.optimize import brentq
 
 from app.core.measurements import FullMeasurements
 from app.core.stretch_pattern import StretchPattern
+from app.core.svg_renderer import SVGRenderer
+from app.core.pdf_renderer import PDFRenderer
+from app.core.utils import dichotomic_search
 
 
 @dataclass
@@ -45,7 +45,7 @@ class CorsetMeasurements:
             return np.sqrt((a**2 + neck_back_height ** 2) / 2) + np.sqrt((a**2 + neck_front_height ** 2) / 2) - fm.neck_circumference / np.pi
 
         kwargs['neck_back_height'] = neck_back_height
-        kwargs['neck_width'] = brentq(f, 0.01, fm.neck_circumference / np.pi)
+        kwargs['neck_width'] = dichotomic_search(f, 0.01, fm.neck_circumference / np.pi)
 
         return cls(**kwargs)
 
@@ -201,7 +201,7 @@ class CorsetPattern(StretchPattern):
                 return R[0]*perp_kh[1] - R[1]*perp_kh[0]  # cross product
 
             # Find t using Brent's method
-            t = brentq(residual, 0.01, 0.99)
+            t = dichotomic_search(residual, 0.01, 0.99)
 
             # Compute λ from the solution
             R = DX - (1-t)**2*(1+2*t)*K - 3*(1-t)*t**2*CX1 - t**3*C1
@@ -260,23 +260,18 @@ class CorsetPattern(StretchPattern):
         gap = getattr(self, 'pattern_gap', 5.0)
         return np.array([-p[0] + gap, p[1]])
 
-    def _draw_line(self, ax, k1, k2, style='-', color='black'):
+    def _draw_line(self, r, k1, k2, style='-', color='black'):
         """Draw line between two point keys."""
         pts = self.points
         if k1 in pts and k2 in pts:
-            ax.plot([pts[k1][0], pts[k2][0]], [pts[k1][1], pts[k2][1]], linestyle=style, color=color, linewidth=1)
+            r.line(pts[k1][0], pts[k1][1], pts[k2][0], pts[k2][1], color=color, style=style)
 
-    def _draw_bezier(self, ax, p0, p1, p2, p3, style='-', color='black', num_points=100, curve_name=None):
+    def _draw_bezier(self, r, p0, p1, p2, p3, style='-', color='black', curve_name=None):
         """Draw cubic Bezier curve."""
         self._validate_bezier_crossing(p0, p1, p2, p3, curve_name)
-        t = np.linspace(0, 1, num_points)
-        curve = (1-t)[:, np.newaxis]**3 * p0 + \
-                3*(1-t)[:, np.newaxis]**2 * t[:, np.newaxis] * p1 + \
-                3*(1-t)[:, np.newaxis] * t[:, np.newaxis]**2 * p2 + \
-                t[:, np.newaxis]**3 * p3
-        ax.plot(curve[:, 0], curve[:, 1], linestyle=style, color=color, linewidth=1)
+        r.bezier(p0, p1, p2, p3, color=color, style=style)
 
-    def _plot_front_curves(self, ax):
+    def _plot_front_curves(self, r):
         """Draw front pattern curves (blue)."""
         pts = self.points
 
@@ -289,7 +284,7 @@ class CorsetPattern(StretchPattern):
         unit_be = vec_be / np.linalg.norm(vec_be)
         control_dist_b1 = np.linalg.norm(p3_a1b1 - p0_a1b1) / 3
         p2_a1b1 = p3_a1b1 - unit_be * control_dist_b1
-        self._draw_bezier(ax, p0_a1b1, p1_a1b1, p2_a1b1, p3_a1b1, '-', 'blue', curve_name='front_side_A1_B1')
+        self._draw_bezier(r, p0_a1b1, p1_a1b1, p2_a1b1, p3_a1b1, '-', 'blue', curve_name='front_side_A1_B1')
 
         # B1 to C1
         p0_b1c1 = pts['B1']
@@ -299,28 +294,28 @@ class CorsetPattern(StretchPattern):
         dist_b1c1 = np.linalg.norm(vec_b1c1)
         unit_b1c1 = vec_b1c1 / dist_b1c1
         p2_b1c1 = p3_b1c1 - unit_b1c1 * (dist_b1c1 * 0.3)
-        self._draw_bezier(ax, p0_b1c1, p1_b1c1, p2_b1c1, p3_b1c1, '-', 'blue', curve_name='front_side_B1_C1')
+        self._draw_bezier(r, p0_b1c1, p1_b1c1, p2_b1c1, p3_b1c1, '-', 'blue', curve_name='front_side_B1_C1')
 
         # Center line: A → E (vertical)
-        ax.plot([pts['A'][0], pts['E'][0]], [pts['A'][1], pts['E'][1]], '-', color='blue', linewidth=1)
+        r.line(pts['A'][0], pts['A'][1], pts['E'][0], pts['E'][1], color='blue')
 
         # Bottom edge: A → A1 (horizontal)
-        ax.plot([pts['A'][0], pts['A1'][0]], [pts['A'][1], pts['A1'][1]], '-', color='blue', linewidth=1)
+        r.line(pts['A'][0], pts['A'][1], pts['A1'][0], pts['A1'][1], color='blue')
 
         # Neck: H → E
         p0_he = pts['H']
         p3_he = pts['E']
         p1_he = self.helper_points['H1']
         p2_he = self.helper_points['E1']
-        self._draw_bezier(ax, p0_he, p1_he, p2_he, p3_he, '-', 'blue', curve_name='front_neck_H_E')
+        self._draw_bezier(r, p0_he, p1_he, p2_he, p3_he, '-', 'blue', curve_name='front_neck_H_E')
 
         # Shoulder: H → K
-        ax.plot([pts['H'][0], pts['K'][0]], [pts['H'][1], pts['K'][1]], '-', color='blue', linewidth=1)
+        r.line(pts['H'][0], pts['H'][1], pts['K'][0], pts['K'][1], color='blue')
 
         # Armhole: K → C1 through D1
-        self._draw_bezier(ax, pts['K'], self.helper_points['K1'], self.helper_points['C11'], pts['C1'], '-', 'blue', curve_name='front_armhole_K_C1')
+        self._draw_bezier(r, pts['K'], self.helper_points['K1'], self.helper_points['C11'], pts['C1'], '-', 'blue', curve_name='front_armhole_K_C1')
 
-    def _plot_back_curves(self, ax):
+    def _plot_back_curves(self, r):
         """Draw back pattern curves (green)."""
         pts = self.points
 
@@ -338,7 +333,7 @@ class CorsetPattern(StretchPattern):
         m_unit_be = m_vec_be / np.linalg.norm(m_vec_be)
         m_control_dist_b1 = np.linalg.norm(m_p3_a1b1 - m_p0_a1b1) / 3
         m_p2_a1b1 = m_p3_a1b1 - m_unit_be * m_control_dist_b1
-        self._draw_bezier(ax, m_p0_a1b1, m_p1_a1b1, m_p2_a1b1, m_p3_a1b1, '-', 'green', curve_name='back_side_A1_B1')
+        self._draw_bezier(r, m_p0_a1b1, m_p1_a1b1, m_p2_a1b1, m_p3_a1b1, '-', 'green', curve_name='back_side_A1_B1')
 
         # B1 to C1 (mirrored)
         m_p0_b1c1 = m_B1
@@ -348,15 +343,15 @@ class CorsetPattern(StretchPattern):
         m_dist_b1c1 = np.linalg.norm(m_vec_b1c1)
         m_unit_b1c1 = m_vec_b1c1 / m_dist_b1c1
         m_p2_b1c1 = m_p3_b1c1 - m_unit_b1c1 * (m_dist_b1c1 * 0.3)
-        self._draw_bezier(ax, m_p0_b1c1, m_p1_b1c1, m_p2_b1c1, m_p3_b1c1, '-', 'green', curve_name='back_side_B1_C1')
+        self._draw_bezier(r, m_p0_b1c1, m_p1_b1c1, m_p2_b1c1, m_p3_b1c1, '-', 'green', curve_name='back_side_B1_C1')
 
         # Center line: A → F (vertical, mirrored)
         m_A = self._mirror_point(pts['A'])
         m_F = self._mirror_point(pts['F'])
-        ax.plot([m_A[0], m_F[0]], [m_A[1], m_F[1]], '-', color='green', linewidth=1)
+        r.line(m_A[0], m_A[1], m_F[0], m_F[1], color='green')
 
         # Bottom edge: A → A1 (horizontal, mirrored)
-        ax.plot([m_A[0], m_A1[0]], [m_A[1], m_A1[1]], '-', color='green', linewidth=1)
+        r.line(m_A[0], m_A[1], m_A1[0], m_A1[1], color='green')
 
         # Neck: H → F (mirrored)
         m_H = self._mirror_point(pts['H'])
@@ -364,39 +359,37 @@ class CorsetPattern(StretchPattern):
         m_p3_hf = m_F
         m_p1_hf = self._mirror_point(self.helper_points['H2'])
         m_p2_hf = self._mirror_point(self.helper_points['F1'])
-        self._draw_bezier(ax, m_p0_hf, m_p1_hf, m_p2_hf, m_p3_hf, '-', 'green', curve_name='back_neck_H_F')
+        self._draw_bezier(r, m_p0_hf, m_p1_hf, m_p2_hf, m_p3_hf, '-', 'green', curve_name='back_neck_H_F')
 
         # Shoulder: H → K (mirrored)
         m_K = self._mirror_point(pts['K'])
-        ax.plot([m_H[0], m_K[0]], [m_H[1], m_K[1]], '-', color='green', linewidth=1)
+        r.line(m_H[0], m_H[1], m_K[0], m_K[1], color='green')
 
         # Armhole: K → C1 through D2 (mirrored)
         m_K2 = self._mirror_point(self.helper_points['K2'])
         m_C12 = self._mirror_point(self.helper_points['C12'])
-        self._draw_bezier(ax, m_K, m_K2, m_C12, m_C1, '-', 'green', curve_name='back_armhole_K_C1')
+        self._draw_bezier(r, m_K, m_K2, m_C12, m_C1, '-', 'green', curve_name='back_armhole_K_C1')
 
-    def _plot_reference(self, ax):
+    def _plot_reference(self, r):
         """Plot reference sheet with coordinates for manual drawing."""
-        ax.set_aspect('equal')
-        ax.axis('off')
         pts = self.points
 
         # Construction Grid (front only)
-        self._draw_line(ax, 'A', 'E', '--', 'gray')  # Center Axis
-        self._draw_line(ax, 'A', 'A1', '--', 'gray')  # Hip line
+        self._draw_line(r, 'A', 'E', '--', 'gray')  # Center Axis
+        self._draw_line(r, 'A', 'A1', '--', 'gray')  # Hip line
 
         # Draw pattern curves
-        self._plot_front_curves(ax)
-        self._plot_back_curves(ax)
+        self._plot_front_curves(r)
+        self._plot_back_curves(r)
 
         # Plot front pattern points with coordinates (relative to B as origin)
         for name, coord in pts.items():
             if name == 'D2':
                 continue  # D2 belongs to back pattern
-            ax.plot(coord[0], coord[1], 'o', color='blue', markersize=3)
+            r.circle(coord[0], coord[1], 0.1, color='blue')
             display_x = abs(coord[0] - pts['B'][0])
             display_y = coord[1] - pts['B'][1]
-            ax.text(coord[0]+0.5, coord[1], f"{name}\n({display_x:.1f}, {display_y:.1f})", fontsize=8, color='blue')
+            r.text(coord[0]+0.5, coord[1], f"{name}\n({display_x:.1f}, {display_y:.1f})", size=8, color='blue')
 
         # Plot back pattern points (mirrored) with coordinates (relative to mirrored B as origin)
         back_points = ['A', 'A1', 'B', 'B1', 'C1', 'D2', 'F', 'H', 'K']
@@ -404,59 +397,60 @@ class CorsetPattern(StretchPattern):
         for name in back_points:
             if name in pts:
                 m_coord = self._mirror_point(pts[name])
-                ax.plot(m_coord[0], m_coord[1], 'o', color='green', markersize=3)
+                r.circle(m_coord[0], m_coord[1], 0.1, color='green')
                 display_x = abs(m_coord[0] - m_B[0])
                 display_y = m_coord[1] - m_B[1]
-                ax.text(m_coord[0]+0.5, m_coord[1], f"{name}\n({display_x:.1f}, {display_y:.1f})", fontsize=8, color='green')
+                r.text(m_coord[0]+0.5, m_coord[1], f"{name}\n({display_x:.1f}, {display_y:.1f})", size=8, color='green')
 
         # Plot front helper points (on front pattern)
         front_helpers = ['H1', 'E1', 'C11', 'K1']
         for name in front_helpers:
             if name in self.helper_points:
                 coord = self.helper_points[name]
-                ax.plot(coord[0], coord[1], 'o', color='gray', markersize=2)
-                ax.text(coord[0]+0.5, coord[1], name, fontsize=8, color='gray')
+                r.circle(coord[0], coord[1], 0.07, color='gray')
+                r.text(coord[0]+0.5, coord[1], name, size=8, color='gray')
 
         # Plot back helper points (mirrored to back pattern)
         back_helpers = ['H2', 'F1', 'C12', 'K2']
         for name in back_helpers:
             if name in self.helper_points:
                 m_coord = self._mirror_point(self.helper_points[name])
-                ax.plot(m_coord[0], m_coord[1], 'o', color='gray', markersize=2)
-                ax.text(m_coord[0]+0.5, m_coord[1], name, fontsize=8, color='gray')
+                r.circle(m_coord[0], m_coord[1], 0.07, color='gray')
+                r.text(m_coord[0]+0.5, m_coord[1], name, size=8, color='gray')
 
         # Scale reference bar
-        ax.plot([0, 10], [min(pts['A'][1], pts['A1'][1]) - 5, min(pts['A'][1], pts['A1'][1]) - 5], linewidth=4, color='black')
-        ax.text(5, min(pts['A'][1], pts['A1'][1]) - 7, "10 cm Scale", ha='center')
+        scale_y = min(pts['A'][1], pts['A1'][1]) - 5
+        r.line(0, scale_y, 10, scale_y, color='black', width=4)
+        r.text(5, scale_y - 2, "10 cm Scale", ha='center')
 
         # Pattern labels
         m_A = self._mirror_point(pts['A'])
         front_center_x = (pts['A'][0] + pts['A1'][0]) / 2
         back_center_x = (m_A[0] + self._mirror_point(pts['A1'])[0]) / 2
         label_y = pts['B'][1]
-        ax.text(front_center_x, label_y, "FRONT", fontsize=12, ha='center', color='blue', fontweight='bold')
-        ax.text(back_center_x, label_y, "BACK", fontsize=12, ha='center', color='green', fontweight='bold')
+        r.text(front_center_x, label_y, "FRONT", size=12, ha='center', color='blue', fontweight='bold')
+        r.text(back_center_x, label_y, "BACK", size=12, ha='center', color='green', fontweight='bold')
 
-    def _plot_printable(self, ax):
+    def _plot_printable(self, r):
         """Plot clean pattern for printing at 1:1 scale."""
-        ax.set_aspect('equal')
         pts = self.points
 
         # Draw pattern curves only
-        self._plot_front_curves(ax)
-        self._plot_back_curves(ax)
+        self._plot_front_curves(r)
+        self._plot_back_curves(r)
 
         # Scale reference bar
-        ax.plot([0, 10], [min(pts['A'][1], pts['A1'][1]) - 5, min(pts['A'][1], pts['A1'][1]) - 5], linewidth=4, color='black')
-        ax.text(5, min(pts['A'][1], pts['A1'][1]) - 7, "10 cm Scale", ha='center')
+        scale_y = min(pts['A'][1], pts['A1'][1]) - 5
+        r.line(0, scale_y, 10, scale_y, color='black', width=4)
+        r.text(5, scale_y - 2, "10 cm Scale", ha='center')
 
         # Minimal labels
         m_A = self._mirror_point(pts['A'])
         front_center_x = (pts['A'][0] + pts['A1'][0]) / 2
         back_center_x = (m_A[0] + self._mirror_point(pts['A1'])[0]) / 2
         label_y = pts['B'][1]
-        ax.text(front_center_x, label_y, "FRONT", fontsize=12, ha='center', color='blue', fontweight='bold')
-        ax.text(back_center_x, label_y, "BACK", fontsize=12, ha='center', color='green', fontweight='bold')
+        r.text(front_center_x, label_y, "FRONT", size=12, ha='center', color='blue', fontweight='bold')
+        r.text(back_center_x, label_y, "BACK", size=12, ha='center', color='green', fontweight='bold')
 
     def _prepare_bounds(self):
         """Calculate pattern bounds (shared by render and generate methods)."""
@@ -465,7 +459,7 @@ class CorsetPattern(StretchPattern):
         ys = [p[1] for p in self.points.values()]
         min_x = min(xs) - 5
         max_x = -min(xs) + self.pattern_gap + 5
-        self.bounds = (min_x, max_x, min(ys)-5, max(ys)+5)
+        self.bounds = (min_x, max_x, min(ys)-10, max(ys)+5)
 
     def render_svg(self, variant: str = "construction") -> str:
         """Render pattern as SVG string.
@@ -478,23 +472,18 @@ class CorsetPattern(StretchPattern):
             SVG content as a string.
         """
         self._prepare_bounds()
+        title = None
+        if variant == "construction":
+            title = f"Corset Construction Draft - Full Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm"
+
+        r = SVGRenderer(self.bounds, y_flip=True, title=title)
 
         if variant == "construction":
-            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
-            self._plot_reference(ax)
-            ax.set_title(f"Corset Construction Draft\nFull Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm")
+            self._plot_reference(r)
         else:
-            width_cm = self.bounds[1] - self.bounds[0]
-            height_cm = self.bounds[3] - self.bounds[2]
-            fig, ax = plt.subplots(figsize=(width_cm/2.54, height_cm/2.54))
-            self._plot_printable(ax)
-            ax.set_title("Real Size Pattern (Print at 100%)")
+            self._plot_printable(r)
 
-        buf = io.BytesIO()
-        fig.savefig(buf, format='svg')
-        plt.close(fig)
-        buf.seek(0)
-        return buf.read().decode('utf-8')
+        return r.to_svg()
 
     def render_pdf(self, variant: str = "construction") -> bytes:
         """Render pattern as PDF bytes.
@@ -507,23 +496,18 @@ class CorsetPattern(StretchPattern):
             PDF content as bytes.
         """
         self._prepare_bounds()
+        title = None
+        if variant == "construction":
+            title = f"Corset Construction Draft - Full Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm"
+
+        r = PDFRenderer(self.bounds, y_flip=True, title=title)
 
         if variant == "construction":
-            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
-            self._plot_reference(ax)
-            ax.set_title(f"Corset Construction Draft\nFull Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm")
+            self._plot_reference(r)
         else:
-            width_cm = self.bounds[1] - self.bounds[0]
-            height_cm = self.bounds[3] - self.bounds[2]
-            fig, ax = plt.subplots(figsize=(width_cm/2.54, height_cm/2.54))
-            self._plot_printable(ax)
-            ax.set_title("Real Size Pattern (Print at 100%)")
+            self._plot_printable(r)
 
-        buf = io.BytesIO()
-        fig.savefig(buf, format='pdf')
-        plt.close(fig)
-        buf.seek(0)
-        return buf.read()
+        return r.to_pdf()
 
     def generate_output(self, base_filename="corset"):
         """Generate pattern files in both SVG and PDF formats."""

@@ -1,10 +1,11 @@
-import io
 from dataclasses import dataclass
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from app.core.stretch_pattern import StretchPattern
+from app.core.svg_renderer import SVGRenderer
+from app.core.pdf_renderer import PDFRenderer
+from app.core.utils import cubic_spline_to_beziers
 
 
 @dataclass
@@ -40,7 +41,7 @@ class SleevePattern(StretchPattern):
         all_points = list(self.points.values()) + list(self.helper_points.values())
         xs = [p[0] for p in all_points]
         ys = [p[1] for p in all_points]
-        self.bounds = (min(xs) - 5, max(xs) + 5, min(ys) - 5, max(ys) + 5)
+        self.bounds = (min(xs) - 5, max(xs) + 5, min(ys) - 5, max(ys) + 10)
 
     def build_construction_points(self):
         """Build the main construction points for the sleeve pattern."""
@@ -143,7 +144,7 @@ class SleevePattern(StretchPattern):
             total += np.sqrt(dx * dx + dy * dy)
         return total
 
-    def _draw_line(self, ax, k1, k2, style='-', color='black', linewidth=1):
+    def _draw_line(self, r, k1, k2, style='-', color='black', width=1):
         """Draw line between two point keys."""
         pts = self.points
         helper = self.helper_points
@@ -151,103 +152,90 @@ class SleevePattern(StretchPattern):
         p1 = pts.get(k1) if k1 in pts else helper.get(k1)
         p2 = pts.get(k2) if k2 in pts else helper.get(k2)
         if p1 is not None and p2 is not None:
-            ax.plot([p1[0], p2[0]], [p1[1], p2[1]], linestyle=style, color=color, linewidth=linewidth)
+            r.line(p1[0], p1[1], p2[0], p2[1], color=color, style=style, width=width)
 
-    def _draw_spline(self, ax, curve_pts, style='-', color='blue', linewidth=1):
-        """Draw spline curve through points."""
-        cx, cy = zip(*curve_pts)
-        try:
-            from scipy.interpolate import make_interp_spline
-            t = np.arange(len(curve_pts))
-            spl = make_interp_spline(t, np.c_[cx, cy], k=3)
-            t_new = np.linspace(t.min(), t.max(), 300)
-            smooth_curve = spl(t_new)
-            ax.plot(smooth_curve[:, 0], smooth_curve[:, 1], linestyle=style, color=color, linewidth=linewidth)
-        except ImportError:
-            ax.plot(cx, cy, linestyle=style, color=color, linewidth=linewidth)
+    def _draw_spline(self, r, curve_pts, style='-', color='blue', width=1):
+        """Draw spline curve through points as cubic Bezier segments."""
+        beziers = cubic_spline_to_beziers(curve_pts)
+        for p0, p1, p2, p3 in beziers:
+            r.bezier(p0, p1, p2, p3, color=color, style=style, width=width)
 
-    def _plot_reference(self, ax):
+    def _plot_reference(self, r):
         """Plot reference sheet with coordinates for manual drawing."""
-        ax.set_aspect('equal')
-        ax.invert_yaxis()  # A at top, C at bottom
-
         pts = self.points
         helper = self.helper_points
 
         # --- Construction Grid (dashed gray) ---
         # Frame
-        self._draw_line(ax, 'A', 'B', '--', 'gray')
-        self._draw_line(ax, 'B', 'D', '--', 'gray')
-        self._draw_line(ax, 'D', 'C', '--', 'gray')
-        self._draw_line(ax, 'C', 'A', '--', 'gray')
+        self._draw_line(r, 'A', 'B', '--', 'gray')
+        self._draw_line(r, 'B', 'D', '--', 'gray')
+        self._draw_line(r, 'D', 'C', '--', 'gray')
+        self._draw_line(r, 'C', 'A', '--', 'gray')
 
         # Center line
-        self._draw_line(ax, 'E', 'F', '--', 'gray')
+        self._draw_line(r, 'E', 'F', '--', 'gray')
 
         # Biceps line
-        self._draw_line(ax, 'I', "I'", '--', 'gray')
+        self._draw_line(r, 'I', "I'", '--', 'gray')
 
         # Elbow line
-        self._draw_line(ax, 'J', "J'", '--', 'gray')
+        self._draw_line(r, 'J', "J'", '--', 'gray')
 
         # Vertical cap guides
-        self._draw_line(ax, 'G', 'G1', ':', 'gray', 0.5)
-        self._draw_line(ax, 'H', 'H1', ':', 'gray', 0.5)
+        self._draw_line(r, 'G', 'G1', ':', 'gray', 0.5)
+        self._draw_line(r, 'H', 'H1', ':', 'gray', 0.5)
 
         # --- Final Outline (solid blue) ---
         # Underarm seams
-        self._draw_line(ax, 'I', 'F1', '-', 'blue')
-        self._draw_line(ax, "I'", 'F2', '-', 'blue')
+        self._draw_line(r, 'I', 'F1', '-', 'blue')
+        self._draw_line(r, "I'", 'F2', '-', 'blue')
 
         # Wrist
-        self._draw_line(ax, 'F1', 'F2', '-', 'blue')
+        self._draw_line(r, 'F1', 'F2', '-', 'blue')
 
         # Cap Curve
         curve_pts = self.generate_curve_points()
-        self._draw_spline(ax, curve_pts, '-', 'blue')
+        self._draw_spline(r, curve_pts, '-', 'blue')
 
         # --- Plot main points with coordinates ---
         for name, coord in pts.items():
-            ax.plot(coord[0], coord[1], 'o', color='black', markersize=3)
-            ax.text(coord[0] + 0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", fontsize=8)
+            r.circle(coord[0], coord[1], 0.1, color='black')
+            r.text(coord[0] + 0.5, coord[1], f"{name}\n({coord[0]:.1f}, {coord[1]:.1f})", size=8)
 
         # --- Plot helper points (smaller, gray, names only) ---
         for name, coord in helper.items():
-            ax.plot(coord[0], coord[1], 'o', color='gray', markersize=2)
-            ax.text(coord[0] + 0.5, coord[1], name, fontsize=8, color='gray')
+            r.circle(coord[0], coord[1], 0.07, color='gray')
+            r.text(coord[0] + 0.5, coord[1], name, size=8, color='gray')
 
         # --- Add scale reference ---
-        min_y = min(pts['C'][1], pts['D'][1])
-        ax.plot([0, 10], [min_y + 3, min_y + 3], linewidth=4, color='black')
-        ax.text(5, min_y + 5, "10 cm Scale", ha='center')
+        min_y = max(pts['C'][1], pts['D'][1])
+        r.line(0, min_y + 3, 10, min_y + 3, color='black', width=4)
+        r.text(5, min_y + 5, "10 cm Scale", ha='center')
 
         # --- Add sleeve cap control measurement ---
-        ax.text(pts['E'][0], min_y + 8, f"Sleeve Cap Control: {self.sleeve_cap_control:.2f} cm",
-                ha='center', fontsize=9, color='blue')
+        r.text(pts['E'][0], min_y + 8, f"Sleeve Cap Control: {self.sleeve_cap_control:.2f} cm",
+               ha='center', size=9, color='blue')
 
-    def _plot_printable(self, ax):
+    def _plot_printable(self, r):
         """Plot clean pattern for printing at 1:1 scale."""
-        ax.set_aspect('equal')
-        ax.invert_yaxis()  # A at top, C at bottom
-
         pts = self.points
 
         # --- Final Outline Only (solid blue) ---
         # Underarm seams
-        self._draw_line(ax, 'I', 'F1', '-', 'blue')
-        self._draw_line(ax, "I'", 'F2', '-', 'blue')
+        self._draw_line(r, 'I', 'F1', '-', 'blue')
+        self._draw_line(r, "I'", 'F2', '-', 'blue')
 
         # Wrist
-        self._draw_line(ax, 'F1', 'F2', '-', 'blue')
+        self._draw_line(r, 'F1', 'F2', '-', 'blue')
 
         # Cap Curve
         curve_pts = self.generate_curve_points()
-        self._draw_spline(ax, curve_pts, '-', 'blue')
+        self._draw_spline(r, curve_pts, '-', 'blue')
 
         # --- Add scale reference ---
-        min_y = min(pts['C'][1], pts['D'][1])
-        ax.plot([0, 10], [min_y + 3, min_y + 3], linewidth=4, color='black')
-        ax.text(5, min_y + 5, "10 cm Scale", ha='center')
+        min_y = max(pts['C'][1], pts['D'][1])
+        r.line(0, min_y + 3, 10, min_y + 3, color='black', width=4)
+        r.text(5, min_y + 5, "10 cm Scale", ha='center')
 
     def render_svg(self, variant: str = "construction") -> str:
         """Render pattern as SVG string.
@@ -259,23 +247,19 @@ class SleevePattern(StretchPattern):
         Returns:
             SVG content as a string.
         """
+        title = None
         if variant == "construction":
-            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
-            self._plot_reference(ax)
-            ax.set_title(f"Jersey Set-In Sleeve Block - Overview\n"
-                         f"Armhole: {self.m.armhole_measurement}cm | Sleeve Length: {self.m.sleeve_length}cm")
-        else:
-            width_cm = self.bounds[1] - self.bounds[0]
-            height_cm = self.bounds[3] - self.bounds[2]
-            fig, ax = plt.subplots(figsize=(width_cm / 2.54, height_cm / 2.54))
-            self._plot_printable(ax)
-            ax.set_title("Real Size Pattern (Print at 100%)")
+            title = (f"Jersey Set-In Sleeve Block - "
+                     f"Armhole: {self.m.armhole_measurement}cm | Sleeve Length: {self.m.sleeve_length}cm")
 
-        buf = io.BytesIO()
-        fig.savefig(buf, format='svg')
-        plt.close(fig)
-        buf.seek(0)
-        return buf.read().decode('utf-8')
+        r = SVGRenderer(self.bounds, y_flip=False, title=title)
+
+        if variant == "construction":
+            self._plot_reference(r)
+        else:
+            self._plot_printable(r)
+
+        return r.to_svg()
 
     def render_pdf(self, variant: str = "construction") -> bytes:
         """Render pattern as PDF bytes.
@@ -287,23 +271,19 @@ class SleevePattern(StretchPattern):
         Returns:
             PDF content as bytes.
         """
+        title = None
         if variant == "construction":
-            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
-            self._plot_reference(ax)
-            ax.set_title(f"Jersey Set-In Sleeve Block - Overview\n"
-                         f"Armhole: {self.m.armhole_measurement}cm | Sleeve Length: {self.m.sleeve_length}cm")
-        else:
-            width_cm = self.bounds[1] - self.bounds[0]
-            height_cm = self.bounds[3] - self.bounds[2]
-            fig, ax = plt.subplots(figsize=(width_cm / 2.54, height_cm / 2.54))
-            self._plot_printable(ax)
-            ax.set_title("Real Size Pattern (Print at 100%)")
+            title = (f"Jersey Set-In Sleeve Block - "
+                     f"Armhole: {self.m.armhole_measurement}cm | Sleeve Length: {self.m.sleeve_length}cm")
 
-        buf = io.BytesIO()
-        fig.savefig(buf, format='pdf')
-        plt.close(fig)
-        buf.seek(0)
-        return buf.read()
+        r = PDFRenderer(self.bounds, y_flip=False, title=title)
+
+        if variant == "construction":
+            self._plot_reference(r)
+        else:
+            self._plot_printable(r)
+
+        return r.to_pdf()
 
     def generate_output(self, base_filename="sleeve"):
         """Generate pattern files in both SVG and PDF formats."""

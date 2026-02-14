@@ -156,11 +156,11 @@ class TestBezierP0P1Validation:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             # Call the drawing methods which invoke validation
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots()
-            pattern._plot_front_curves(ax)
-            pattern._plot_back_curves(ax)
-            plt.close(fig)
+            from app.core.svg_renderer import SVGRenderer
+            bounds = (-30, 30, -30, 50)
+            r = SVGRenderer(bounds, y_flip=True)
+            pattern._plot_front_curves(r)
+            pattern._plot_back_curves(r)
 
             # Filter for our specific warnings
             crossing_warnings = [

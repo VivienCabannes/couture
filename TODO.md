@@ -1,8 +1,16 @@
-Remove the files at the root
+Add a README.md
+
+Think more of the design I want.
+
+Improve the front-end design.
 
 Make sure I can still use the back-end without going through the front-end
+    - Create pdf to visualize them locally
+
+Clean the back-end
 
 Simplify docker to be lighter weight.
+
 
 
 ## Code Review
