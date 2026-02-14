@@ -19,7 +19,7 @@ export default function SizeSelector({ value, onChange }: Props) {
         Standard Size
       </label>
       <select
-        className="w-full border border-gray-300 rounded px-3 py-2 text-sm"
+        className="custom-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm appearance-none bg-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
         value={value ?? "custom"}
         onChange={(e) => {
           const v = e.target.value;

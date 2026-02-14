@@ -12,12 +12,12 @@ export default function StretchForm({ value, onChange }: Props) {
 
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Stretch Settings</h3>
-      <div className="space-y-3">
+      <h3 className="text-base font-medium text-gray-800 mb-3">Stretch Settings</h3>
+      <div className="space-y-4">
         <div>
-          <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+          <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>Horizontal stretch</span>
-            <span className="font-mono">{(value.horizontal * 100).toFixed(0)}%</span>
+            <span className="font-mono text-xs text-gray-500">{(value.horizontal * 100).toFixed(0)}%</span>
           </div>
           <input
             type="range"
@@ -30,9 +30,9 @@ export default function StretchForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+          <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>Vertical stretch</span>
-            <span className="font-mono">{(value.vertical * 100).toFixed(0)}%</span>
+            <span className="font-mono text-xs text-gray-500">{(value.vertical * 100).toFixed(0)}%</span>
           </div>
           <input
             type="range"
@@ -45,9 +45,9 @@ export default function StretchForm({ value, onChange }: Props) {
           />
         </div>
         <div>
-          <div className="flex justify-between text-xs text-gray-500 mb-0.5">
+          <div className="flex justify-between text-sm text-gray-600 mb-1">
             <span>Usage</span>
-            <span className="font-mono">{(value.usage * 100).toFixed(0)}%</span>
+            <span className="font-mono text-xs text-gray-500">{(value.usage * 100).toFixed(0)}%</span>
           </div>
           <input
             type="range"

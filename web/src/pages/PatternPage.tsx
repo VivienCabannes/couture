@@ -85,14 +85,15 @@ export default function PatternPage() {
 
   return (
     <div>
-      <Link to="/" className="text-sm text-blue-600 hover:underline mb-4 inline-block">
+      <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-3 py-1.5 rounded-full mb-6 transition-colors">
         &larr; Back to patterns
       </Link>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">{patternInfo.label}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight text-gray-900 mb-8">{patternInfo.label}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left panel: forms */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 space-y-2">
           {patternInfo.name === "corset" && (
             <SizeSelector value={selectedSize} onChange={setSelectedSize} />
           )}
@@ -118,18 +119,19 @@ export default function PatternPage() {
           )}
 
           <button
-            className="w-full bg-blue-600 text-white py-2.5 rounded font-medium hover:bg-blue-700 disabled:opacity-50"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium shadow-sm hover:bg-blue-700 disabled:opacity-50 transition-colors"
             onClick={handleGenerate}
             disabled={loading}
           >
             {loading ? "Generating..." : "Generate Pattern"}
           </button>
+          </div>
         </div>
 
         {/* Right panel: preview */}
         <div className="lg:col-span-2">
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+            <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg mb-4 text-sm">
               {error}
             </div>
           )}
@@ -143,7 +145,7 @@ export default function PatternPage() {
 
               <div className="mt-4 flex gap-3">
                 <button
-                  className="px-4 py-2 bg-gray-800 text-white rounded text-sm hover:bg-gray-900"
+                  className="px-5 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
                   onClick={() => handleDownloadPdf()}
                 >
                   Download PDF
@@ -151,9 +153,9 @@ export default function PatternPage() {
               </div>
 
               {result.warnings.length > 0 && (
-                <div className="mt-4 bg-yellow-50 border border-yellow-200 rounded px-4 py-3">
-                  <h4 className="text-sm font-semibold text-yellow-800 mb-1">Warnings</h4>
-                  <ul className="text-sm text-yellow-700 list-disc list-inside">
+                <div className="mt-4 bg-amber-50 rounded-lg px-4 py-3">
+                  <h4 className="text-sm font-semibold text-amber-800 mb-1">Warnings</h4>
+                  <ul className="text-sm text-amber-700 list-disc list-inside">
                     {result.warnings.map((w, i) => (
                       <li key={i}>{w}</li>
                     ))}
@@ -164,8 +166,8 @@ export default function PatternPage() {
           )}
 
           {!result && !error && (
-            <div className="text-gray-400 text-center py-20">
-              Configure measurements and click Generate to preview the pattern.
+            <div className="text-gray-400 text-center py-24 border-2 border-dashed border-gray-200 rounded-xl">
+              <p className="text-lg">Configure measurements and click Generate to preview the pattern.</p>
             </div>
           )}
         </div>

@@ -9,17 +9,17 @@ interface Props {
 export default function MeasurementForm({ fields, values, onChange }: Props) {
   return (
     <div className="mb-6">
-      <h3 className="text-sm font-semibold text-gray-700 mb-3">Measurements (cm)</h3>
+      <h3 className="text-base font-medium text-gray-800 mb-3">Measurements (cm)</h3>
       <div className="grid grid-cols-2 gap-3">
         {fields.map((field) => (
           <div key={field.name}>
-            <label className="block text-xs text-gray-500 mb-0.5" title={field.description}>
+            <label className="block text-xs font-medium text-gray-600 mb-1" title={field.description}>
               {field.description}
             </label>
             <input
               type="number"
               step="0.1"
-              className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
               value={values[field.name] ?? ""}
               onChange={(e) => onChange(field.name, parseFloat(e.target.value) || 0)}
             />
