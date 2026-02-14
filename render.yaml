@@ -25,4 +25,4 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://patterns-api.onrender.com
+        value: https://patterns-api-i15c.onrender.com
