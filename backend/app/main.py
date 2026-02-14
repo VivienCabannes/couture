@@ -12,6 +12,7 @@ origins = [
     "http://localhost:5173",
     "http://localhost:4173",
     "http://localhost:3000",
+    "http://localhost:8081",
 ]
 cors_env = os.environ.get("CORS_ORIGINS", "")
 if cors_env:

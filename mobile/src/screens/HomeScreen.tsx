@@ -21,17 +21,36 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 export default function HomeScreen({ navigation }: Props) {
   const [types, setTypes] = useState<PatternTypeInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadTypes = () => {
+    setLoading(true);
+    setError(null);
     fetchPatternTypes()
       .then(setTypes)
+      .catch((err) => setError(err.message || "Failed to load patterns"))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadTypes();
   }, []);
 
   if (loading) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadTypes}>
+          <Text style={styles.retryText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -73,4 +92,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontSize: 18, fontWeight: "600", color: "#111827", marginBottom: 4 },
   cardSub: { fontSize: 14, color: "#6b7280" },
+  errorText: { fontSize: 16, color: "#dc2626", marginBottom: 16, textAlign: "center", paddingHorizontal: 24 },
+  retryButton: { backgroundColor: "#111827", borderRadius: 8, paddingVertical: 10, paddingHorizontal: 24 },
+  retryText: { color: "#ffffff", fontSize: 16, fontWeight: "600" },
 });
