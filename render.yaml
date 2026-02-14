@@ -1,0 +1,28 @@
+services:
+  # Backend: Docker web service
+  - type: web
+    name: patterns-api
+    runtime: docker
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: CORS_ORIGINS
+        value: https://patterns-web.onrender.com
+
+  # Frontend: Render static site (CDN-backed, free)
+  - type: web
+    name: patterns-web
+    runtime: static
+    buildCommand: cd web && npm ci && npm run build
+    staticPublishPath: web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://patterns-api.onrender.com

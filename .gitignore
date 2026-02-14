@@ -25,5 +25,8 @@ ENV/
 *.pdf
 *.svg
 
+# Docker
+docker-compose.override.yml
+
 # OS
 .DS_Store

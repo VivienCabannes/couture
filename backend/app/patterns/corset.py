@@ -1,3 +1,4 @@
+import io
 import warnings
 from dataclasses import dataclass, fields
 
@@ -5,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import brentq
 
-from measurements import FullMeasurements
-from stretch_pattern import StretchPattern
+from app.core.measurements import FullMeasurements
+from app.core.stretch_pattern import StretchPattern
 
 
 @dataclass
@@ -68,7 +69,6 @@ class CorsetPattern(StretchPattern):
 
         self.build_construction_points()
         self.build_bezier_helper_points()
-        print(self.points)
 
     def build_construction_points(self):
         # Waist as the reference
@@ -110,7 +110,7 @@ class CorsetPattern(StretchPattern):
             dy = np.sqrt(self.m.underarm_height ** 2 - dx ** 2)
             y = self.points['B1'][1] + dy
             self.points['C1'] = np.array([x, y])
-        
+
         # Shoulder construction
         # D: Shoulder level, at the middle of F and C
         self.points['D'] = (self.points['F'] + self.points['C']) / 2
@@ -458,34 +458,92 @@ class CorsetPattern(StretchPattern):
         ax.text(front_center_x, label_y, "FRONT", fontsize=12, ha='center', color='blue', fontweight='bold')
         ax.text(back_center_x, label_y, "BACK", fontsize=12, ha='center', color='green', fontweight='bold')
 
-    def generate_output(self, base_filename="corset"):
-        """Generate pattern files in both SVG and PDF formats."""
+    def _prepare_bounds(self):
+        """Calculate pattern bounds (shared by render and generate methods)."""
         self.pattern_gap = 5.0
-
-        # Calculate bounds
         xs = [p[0] for p in self.points.values()]
         ys = [p[1] for p in self.points.values()]
         min_x = min(xs) - 5
         max_x = -min(xs) + self.pattern_gap + 5
         self.bounds = (min_x, max_x, min(ys)-5, max(ys)+5)
 
+    def render_svg(self, variant: str = "construction") -> str:
+        """Render pattern as SVG string.
+
+        Args:
+            variant: "construction" for reference sheet with coordinates,
+                     "pattern" for clean 1:1 printable pattern.
+
+        Returns:
+            SVG content as a string.
+        """
+        self._prepare_bounds()
+
+        if variant == "construction":
+            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
+            self._plot_reference(ax)
+            ax.set_title(f"Corset Construction Draft\nFull Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm")
+        else:
+            width_cm = self.bounds[1] - self.bounds[0]
+            height_cm = self.bounds[3] - self.bounds[2]
+            fig, ax = plt.subplots(figsize=(width_cm/2.54, height_cm/2.54))
+            self._plot_printable(ax)
+            ax.set_title("Real Size Pattern (Print at 100%)")
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='svg')
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read().decode('utf-8')
+
+    def render_pdf(self, variant: str = "construction") -> bytes:
+        """Render pattern as PDF bytes.
+
+        Args:
+            variant: "construction" for reference sheet with coordinates,
+                     "pattern" for clean 1:1 printable pattern.
+
+        Returns:
+            PDF content as bytes.
+        """
+        self._prepare_bounds()
+
+        if variant == "construction":
+            fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
+            self._plot_reference(ax)
+            ax.set_title(f"Corset Construction Draft\nFull Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm")
+        else:
+            width_cm = self.bounds[1] - self.bounds[0]
+            height_cm = self.bounds[3] - self.bounds[2]
+            fig, ax = plt.subplots(figsize=(width_cm/2.54, height_cm/2.54))
+            self._plot_printable(ax)
+            ax.set_title("Real Size Pattern (Print at 100%)")
+
+        buf = io.BytesIO()
+        fig.savefig(buf, format='pdf')
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read()
+
+    def generate_output(self, base_filename="corset"):
+        """Generate pattern files in both SVG and PDF formats."""
+        self._prepare_bounds()
+
         # --- Construction reference (with coordinates) ---
-        fig, ax = plt.subplots(figsize=(8.27, 11.69))  # A4
-        self._plot_reference(ax)
-        ax.set_title(f"Corset Construction Draft\nFull Bust: {self.m.full_bust}cm | Full Waist: {self.m.full_waist}cm")
-        fig.savefig(f"{base_filename}_constructions.svg", format='svg')
-        fig.savefig(f"{base_filename}_constructions.pdf", format='pdf')
-        plt.close()
+        svg_construction = self.render_svg("construction")
+        with open(f"{base_filename}_constructions.svg", "w") as f:
+            f.write(svg_construction)
+        pdf_construction = self.render_pdf("construction")
+        with open(f"{base_filename}_constructions.pdf", "wb") as f:
+            f.write(pdf_construction)
 
         # --- Printable pattern (1:1 scale) ---
-        width_cm = self.bounds[1] - self.bounds[0]
-        height_cm = self.bounds[3] - self.bounds[2]
-        fig_real, ax_real = plt.subplots(figsize=(width_cm/2.54, height_cm/2.54))
-        self._plot_printable(ax_real)
-        ax_real.set_title("Real Size Pattern (Print at 100%)")
-        fig_real.savefig(f"{base_filename}_pattern.svg", format='svg')
-        fig_real.savefig(f"{base_filename}_pattern.pdf", format='pdf')
-        plt.close()
+        svg_pattern = self.render_svg("pattern")
+        with open(f"{base_filename}_pattern.svg", "w") as f:
+            f.write(svg_pattern)
+        pdf_pattern = self.render_pdf("pattern")
+        with open(f"{base_filename}_pattern.pdf", "wb") as f:
+            f.write(pdf_pattern)
 
         print("Patterns generated:")
         print(f"  {base_filename}_constructions.svg, {base_filename}_constructions.pdf")
@@ -493,7 +551,7 @@ class CorsetPattern(StretchPattern):
 
 
 if __name__ == "__main__":
-    from measurements import default_measurements, individual_measurements
+    from app.core.measurements import default_measurements, individual_measurements
     fm = individual_measurements("vivien")
     fm = individual_measurements("kwama")
     fm = default_measurements(size=38)
@@ -501,11 +559,11 @@ if __name__ == "__main__":
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     pattern = CorsetPattern(corset_m)
     pattern.stretch(horizontal=0.2, vertical=0.1)
-    
+
     # Print Coordinates
     print("Construction Points:")
     for name, p in pattern.points.items():
         print(f"{name}: x={p[0]:.2f}, y={p[1]:.2f}")
-        
+
     # Generate output files
     pattern.generate_output("corset")
