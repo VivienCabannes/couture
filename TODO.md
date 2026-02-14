@@ -1,3 +1,10 @@
+Remove the files at the root
+
+Make sure I can still use the back-end without going through the front-end
+
+Simplify docker to be lighter weight.
+
+
 ## Code Review
 
 I have some constraint, I want to make sure that all my Bezier curves never crosses the Starting point - Control point line, can you make a test to make sure that none of these happen. If so can you raise a warning.
