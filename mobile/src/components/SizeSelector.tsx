@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { fetchSizes } from "../api/measurements";
+import { fetchSizes } from "@shared/api/measurements";
 
 interface Props {
   value: number | null;

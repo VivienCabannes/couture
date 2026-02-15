@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
-import type { MeasurementFieldDefinition } from "../types";
+import type { MeasurementFieldDefinition } from "@shared/types";
 
 interface Props {
   fields: MeasurementFieldDefinition[];
@@ -11,7 +11,6 @@ interface Props {
 export default function MeasurementForm({ fields, values, onChange }: Props) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Measurements (cm)</Text>
       {fields.map((field) => (
         <View key={field.name} style={styles.row}>
           <Text style={styles.label} numberOfLines={1}>
@@ -31,7 +30,6 @@ export default function MeasurementForm({ fields, values, onChange }: Props) {
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
-  title: { fontSize: 14, fontWeight: "600", color: "#374151", marginBottom: 8 },
   row: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   label: { flex: 1, fontSize: 12, color: "#6b7280", marginRight: 8 },
   input: {

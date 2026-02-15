@@ -1,7 +1,11 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+let baseUrl = "http://localhost:8000";
+
+export function configureApi(options: { baseUrl: string }) {
+  baseUrl = options.baseUrl;
+}
 
 export async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -16,7 +20,7 @@ export async function apiFetch<T>(path: string, options?: RequestInit): Promise<
 }
 
 export async function apiFetchRaw(path: string, options?: RequestInit): Promise<Response> {
-  const response = await fetch(`${BASE_URL}${path}`, {
+  const response = await fetch(`${baseUrl}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",

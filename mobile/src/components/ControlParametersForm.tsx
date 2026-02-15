@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
-import type { ControlParameterDefinition } from "../types";
+import type { ControlParameterDefinition } from "@shared/types";
 
 interface Props {
   parameters: ControlParameterDefinition[];
@@ -14,7 +14,6 @@ export default function ControlParametersForm({ parameters, values, onChange }: 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Control Parameters</Text>
       {parameters.map((param) => {
         const val = values[param.name] ?? param.default;
         return (
@@ -42,7 +41,6 @@ export default function ControlParametersForm({ parameters, values, onChange }: 
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
-  title: { fontSize: 14, fontWeight: "600", color: "#374151", marginBottom: 8 },
   row: { marginBottom: 12 },
   labelRow: { flexDirection: "row", justifyContent: "space-between" },
   label: { fontSize: 12, color: "#6b7280", flex: 1 },

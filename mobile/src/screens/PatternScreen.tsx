@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,16 @@ import {
   StyleSheet,
   ActivityIndicator,
   Alert,
+  Switch,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { fetchPatternTypes, generatePattern, downloadAndSharePdf } from "../api/patterns";
-import { fetchDefaultMeasurements } from "../api/measurements";
-import type { PatternTypeInfo, PatternResponse, StretchInput } from "../types";
+import { downloadAndSharePdf } from "../api/patterns";
+import { usePatternForm } from "@shared/hooks/usePatternForm";
+import CollapsibleSection from "../components/CollapsibleSection";
+import SizeSelector from "../components/SizeSelector";
 import MeasurementForm from "../components/MeasurementForm";
+import EaseForm from "../components/EaseForm";
+import SeamAllowanceForm from "../components/SeamAllowanceForm";
 import ControlParametersForm from "../components/ControlParametersForm";
 import StretchForm from "../components/StretchForm";
 import PatternPreview from "../components/PatternPreview";
@@ -26,69 +30,20 @@ type Props = NativeStackScreenProps<RootStackParamList, "Pattern">;
 
 export default function PatternScreen({ route }: Props) {
   const { type } = route.params;
-  const [patternInfo, setPatternInfo] = useState<PatternTypeInfo | null>(null);
-  const [measurements, setMeasurements] = useState<Record<string, number>>({});
-  const [controlParams, setControlParams] = useState<Record<string, number>>({});
-  const [stretch, setStretch] = useState<StretchInput>({ horizontal: 0, vertical: 0, usage: 1 });
-  const [result, setResult] = useState<PatternResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    fetchPatternTypes().then((types) => {
-      const info = types.find((t) => t.name === type);
-      if (info) {
-        setPatternInfo(info);
-        const defaults: Record<string, number> = {};
-        info.control_parameters.forEach((p) => {
-          defaults[p.name] = p.default;
-        });
-        setControlParams(defaults);
-      }
-    });
-  }, [type]);
-
-  // Load defaults for corset
-  useEffect(() => {
-    if (patternInfo?.name === "corset") {
-      fetchDefaultMeasurements(38).then((m) => {
-        setMeasurements(m as unknown as Record<string, number>);
-      });
-    }
-  }, [patternInfo]);
-
-  const handleGenerate = useCallback(async () => {
-    setLoading(true);
-    try {
-      const resp = await generatePattern({
-        pattern_type: type,
-        measurements,
-        control_parameters: Object.keys(controlParams).length > 0 ? controlParams : undefined,
-        stretch: stretch.horizontal > 0 || stretch.vertical > 0 ? stretch : undefined,
-        output_format: "all",
-      });
-      setResult(resp);
-    } catch (e) {
-      Alert.alert("Error", e instanceof Error ? e.message : "Generation failed");
-    } finally {
-      setLoading(false);
-    }
-  }, [type, measurements, controlParams, stretch]);
+  const form = usePatternForm({
+    type,
+    onError: (msg) => Alert.alert("Error", msg),
+  });
 
   const handleDownloadPdf = useCallback(async () => {
     try {
-      await downloadAndSharePdf({
-        pattern_type: type,
-        measurements,
-        control_parameters: Object.keys(controlParams).length > 0 ? controlParams : undefined,
-        stretch: stretch.horizontal > 0 || stretch.vertical > 0 ? stretch : undefined,
-        output_format: "pdf",
-      });
+      await downloadAndSharePdf(form.buildRequest("pdf"));
     } catch (e) {
       Alert.alert("Error", e instanceof Error ? e.message : "Download failed");
     }
-  }, [type, measurements, controlParams, stretch]);
+  }, [form.buildRequest]);
 
-  if (!patternInfo) {
+  if (!form.patternInfo) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -98,55 +53,83 @@ export default function PatternScreen({ route }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <MeasurementForm
-        fields={patternInfo.required_measurements}
-        values={measurements}
-        onChange={(name, value) =>
-          setMeasurements((prev) => ({ ...prev, [name]: value }))
-        }
-      />
+      {/* Size */}
+      <CollapsibleSection title="Size">
+        <SizeSelector value={form.selectedSize} onChange={form.setSelectedSize} />
+        <View style={styles.toggleRow}>
+          <Text style={styles.toggleLabel}>Show custom measurements</Text>
+          <Switch
+            value={form.showAdvancedMeasurements}
+            onValueChange={form.setShowAdvancedMeasurements}
+          />
+        </View>
+        {form.showAdvancedMeasurements && (
+          <MeasurementForm
+            fields={form.patternInfo.required_measurements}
+            values={form.measurements}
+            onChange={form.updateMeasurement}
+          />
+        )}
+      </CollapsibleSection>
 
-      <ControlParametersForm
-        parameters={patternInfo.control_parameters}
-        values={controlParams}
-        onChange={(name, value) =>
-          setControlParams((prev) => ({ ...prev, [name]: value }))
-        }
-      />
+      {/* Ease */}
+      <CollapsibleSection title="Ease">
+        <EaseForm value={form.ease} onChange={form.setEase} />
+      </CollapsibleSection>
 
-      {patternInfo.supports_stretch && (
-        <StretchForm value={stretch} onChange={setStretch} />
+      {/* Seam Allowance */}
+      <CollapsibleSection title="Seam Allowance">
+        <SeamAllowanceForm value={form.seamAllowance} onChange={form.setSeamAllowance} />
+      </CollapsibleSection>
+
+      {/* Transformations */}
+      {form.patternInfo.supports_stretch && (
+        <CollapsibleSection title="Transformations">
+          <StretchForm value={form.stretch} onChange={form.setStretch} />
+        </CollapsibleSection>
       )}
 
+      {/* Advanced Controls */}
+      {form.patternInfo.control_parameters.length > 0 && (
+        <CollapsibleSection title="Advanced Controls">
+          <ControlParametersForm
+            parameters={form.patternInfo.control_parameters}
+            values={form.controlParams}
+            onChange={form.updateControlParam}
+          />
+        </CollapsibleSection>
+      )}
+
+      {/* Generate */}
       <TouchableOpacity
-        style={[styles.button, loading && styles.buttonDisabled]}
-        onPress={handleGenerate}
-        disabled={loading}
+        style={[styles.button, form.loading && styles.buttonDisabled]}
+        onPress={form.handleGenerate}
+        disabled={form.loading}
       >
-        {loading ? (
+        {form.loading ? (
           <ActivityIndicator color="#ffffff" />
         ) : (
           <Text style={styles.buttonText}>Generate Pattern</Text>
         )}
       </TouchableOpacity>
 
-      {result && (
+      {form.result && (
         <>
           <PatternPreview
-            constructionSvg={result.construction_svg}
-            patternSvg={result.pattern_svg}
+            constructionSvg={form.result.construction_svg}
+            patternSvg={form.result.pattern_svg}
           />
 
           <TouchableOpacity style={styles.downloadButton} onPress={handleDownloadPdf}>
             <Text style={styles.downloadButtonText}>Download & Share PDF</Text>
           </TouchableOpacity>
 
-          {result.warnings.length > 0 && (
+          {form.result.warnings.length > 0 && (
             <View style={styles.warningBox}>
               <Text style={styles.warningTitle}>Warnings</Text>
-              {result.warnings.map((w, i) => (
+              {form.result.warnings.map((w: string, i: number) => (
                 <Text key={i} style={styles.warningText}>
-                  • {w}
+                  {"\u2022"} {w}
                 </Text>
               ))}
             </View>
@@ -161,6 +144,13 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f9fafb" },
   content: { padding: 16 },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
+  toggleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  toggleLabel: { fontSize: 13, color: "#374151" },
   button: {
     backgroundColor: "#2563eb",
     paddingVertical: 14,

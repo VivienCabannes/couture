@@ -1,4 +1,4 @@
-import type { ControlParameterDefinition } from "../types";
+import type { ControlParameterDefinition } from "@shared/types";
 
 interface Props {
   parameters: ControlParameterDefinition[];
@@ -10,8 +10,7 @@ export default function ControlParametersForm({ parameters, values, onChange }: 
   if (parameters.length === 0) return null;
 
   return (
-    <div className="mb-6">
-      <h3 className="text-base font-medium text-gray-800 mb-3">Control Parameters</h3>
+    <div>
       <div className="space-y-4">
         {parameters.map((param) => {
           const val = values[param.name] ?? param.default;

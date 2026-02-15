@@ -1,4 +1,4 @@
-import type { MeasurementFieldDefinition } from "../types";
+import type { MeasurementFieldDefinition } from "@shared/types";
 
 interface Props {
   fields: MeasurementFieldDefinition[];
@@ -8,8 +8,7 @@ interface Props {
 
 export default function MeasurementForm({ fields, values, onChange }: Props) {
   return (
-    <div className="mb-6">
-      <h3 className="text-base font-medium text-gray-800 mb-3">Measurements (cm)</h3>
+    <div>
       <div className="grid grid-cols-2 gap-3">
         {fields.map((field) => (
           <div key={field.name}>

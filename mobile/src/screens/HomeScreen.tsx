@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { fetchPatternTypes } from "../api/patterns";
-import type { PatternTypeInfo } from "../types";
+import type { PatternTypeInfo } from "@shared/types";
 
 type RootStackParamList = {
   Home: undefined;

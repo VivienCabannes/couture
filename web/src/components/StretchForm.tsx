@@ -1,4 +1,4 @@
-import type { StretchInput } from "../types";
+import type { StretchInput } from "@shared/types";
 
 interface Props {
   value: StretchInput;
@@ -11,8 +11,7 @@ export default function StretchForm({ value, onChange }: Props) {
   };
 
   return (
-    <div className="mb-6">
-      <h3 className="text-base font-medium text-gray-800 mb-3">Stretch Settings</h3>
+    <div>
       <div className="space-y-4">
         <div>
           <div className="flex justify-between text-sm text-gray-600 mb-1">

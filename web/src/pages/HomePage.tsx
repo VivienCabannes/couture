@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchPatternTypes } from "../api/patterns";
-import type { PatternTypeInfo } from "../types";
+import type { PatternTypeInfo } from "@shared/types";
 
 export default function HomePage() {
   const [types, setTypes] = useState<PatternTypeInfo[]>([]);

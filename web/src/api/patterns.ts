@@ -1,16 +1,7 @@
-import { apiFetch, apiFetchRaw } from "./client";
-import type { PatternRequest, PatternResponse, PatternTypeInfo } from "../types";
+export { fetchPatternTypes, generatePattern } from "@shared/api/patterns";
 
-export function fetchPatternTypes(): Promise<PatternTypeInfo[]> {
-  return apiFetch<PatternTypeInfo[]>("/api/patterns/types");
-}
-
-export function generatePattern(request: PatternRequest): Promise<PatternResponse> {
-  return apiFetch<PatternResponse>("/api/patterns/generate", {
-    method: "POST",
-    body: JSON.stringify(request),
-  });
-}
+import { apiFetchRaw } from "@shared/api/client";
+import type { PatternRequest } from "@shared/types";
 
 export async function downloadPatternPdf(request: PatternRequest): Promise<void> {
   const response = await apiFetchRaw("/api/patterns/generate", {

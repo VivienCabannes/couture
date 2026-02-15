@@ -44,6 +44,12 @@ export interface PatternTypeInfo {
   supports_stretch: boolean;
 }
 
+export interface EaseInput {
+  bustEase: number;
+  waistEase: number;
+  hipEase: number;
+}
+
 export interface StretchInput {
   horizontal: number;
   vertical: number;

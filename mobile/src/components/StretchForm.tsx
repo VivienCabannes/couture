@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
-import type { StretchInput } from "../types";
+import type { StretchInput } from "@shared/types";
 
 interface Props {
   value: StretchInput;
@@ -21,7 +21,6 @@ export default function StretchForm({ value, onChange }: Props) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Stretch Settings</Text>
       {items.map((item) => (
         <View key={item.key} style={styles.row}>
           <View style={styles.labelRow}>
@@ -46,7 +45,6 @@ export default function StretchForm({ value, onChange }: Props) {
 
 const styles = StyleSheet.create({
   container: { marginBottom: 16 },
-  title: { fontSize: 14, fontWeight: "600", color: "#374151", marginBottom: 8 },
   row: { marginBottom: 12 },
   labelRow: { flexDirection: "row", justifyContent: "space-between" },
   label: { fontSize: 12, color: "#6b7280" },

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchSizes } from "../api/measurements";
+import { fetchSizes } from "@shared/api/measurements";
 
 interface Props {
   value: number | null;
