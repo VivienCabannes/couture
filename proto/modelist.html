@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couture — Modelist Corner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      color: #111827;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .header {
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .header-inner {
+      max-width: 1152px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .brand {
+      font-size: 1.25rem; font-weight: 600; color: #111827;
+      text-decoration: none; transition: color 0.2s;
+    }
+
+    .brand:hover { color: #2563eb; }
+    .spacer { flex: 1; }
+
+    .header-btn {
+      padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      background: #fff; font-family: inherit; font-size: 0.8125rem;
+      font-weight: 600; color: #374151; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.3s;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .header-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+
+    .header-btn svg {
+      width: 16px; height: 16px; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+
+    .main {
+      max-width: 1152px; margin: 0 auto; padding: 40px 24px;
+    }
+
+    .heading {
+      font-size: 1.875rem; font-weight: 600; letter-spacing: -0.025em;
+      color: #111827; margin-bottom: 32px; transition: color 0.3s;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 999px; background: #eff6ff;
+      color: #2563eb; text-decoration: none; font-size: 0.8125rem;
+      font-weight: 600; margin-bottom: 24px; transition: background 0.15s;
+    }
+
+    .back-link:hover { background: #dbeafe; }
+
+    /* ---- Split Panel ---- */
+    .split-panel {
+      display: flex; gap: 24px; min-height: 60vh;
+    }
+
+    .panel-left { flex: 3; }
+    .panel-right { flex: 2; }
+
+    /* ---- SVG Viewport ---- */
+    .svg-viewport {
+      position: relative;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      min-height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .zoom-controls {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      display: flex;
+      gap: 4px;
+    }
+
+    .zoom-btn {
+      width: 32px; height: 32px;
+      border: 1px solid #d1d5db; border-radius: 6px;
+      background: #fff; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; font-weight: 600; color: #374151;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .zoom-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+
+    /* ---- Controls Panel ---- */
+    .controls-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .controls-panel details {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      background: #fff;
+      overflow: hidden;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .controls-panel summary {
+      padding: 12px 16px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #111827;
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.3s;
+    }
+
+    .controls-panel summary::before {
+      content: '▸';
+      transition: transform 0.2s;
+    }
+
+    .controls-panel details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .controls-panel .section-body {
+      padding: 0 16px 16px;
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.8125rem;
+      color: #374151;
+    }
+
+    .control-row label {
+      flex: 1;
+    }
+
+    .control-row input[type="number"] {
+      width: 72px;
+      padding: 4px 8px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      text-align: right;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .control-row input[type="number"]:focus {
+      border-color: #2563eb;
+    }
+
+    .ai-input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .ai-text-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .ai-text-input:focus { border-color: #2563eb; }
+
+    .ai-apply-btn {
+      padding: 8px 14px;
+      border: none; border-radius: 8px;
+      background: #2563eb; color: #fff;
+      font-family: inherit; font-size: 0.8125rem;
+      font-weight: 600; cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .ai-apply-btn:hover { background: #1d4ed8; }
+
+    /* ---- Dark mode ---- */
+    body.dark { background: #111827; color: #f9fafb; }
+    body.dark .header { background: #1f2937; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    body.dark .brand { color: #f9fafb; }
+    body.dark .brand:hover { color: #60a5fa; }
+    body.dark .header-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    body.dark .header-btn:hover { background: #374151; border-color: #6b7280; }
+    body.dark .heading { color: #f9fafb; }
+    body.dark .back-link { background: #1e3a5f; color: #60a5fa; }
+    body.dark .back-link:hover { background: #1e4d8f; }
+    body.dark .svg-viewport { background: #1f2937; border-color: #374151; }
+    body.dark .zoom-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    body.dark .zoom-btn:hover { background: #374151; border-color: #6b7280; }
+    body.dark .controls-panel details { background: #1f2937; border-color: #374151; }
+    body.dark .controls-panel summary { color: #f9fafb; }
+    body.dark .control-row { color: #d1d5db; }
+    body.dark .control-row input[type="number"] { background: #111827; border-color: #4b5563; color: #f9fafb; }
+    body.dark .control-row input[type="number"]:focus { border-color: #60a5fa; }
+    body.dark .ai-text-input { background: #111827; border-color: #4b5563; color: #f9fafb; }
+    body.dark .ai-text-input:focus { border-color: #60a5fa; }
+
+    .pattern-outline { stroke: #2563eb; stroke-width: 1.5; fill: none; }
+    body.dark .pattern-outline { stroke: #60a5fa; }
+
+    @media (max-width: 1023px) {
+      .split-panel { flex-direction: column; }
+      .panel-left, .panel-right { flex: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="brand">Couture</a>
+      <div class="spacer"></div>
+      <button class="header-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <button class="header-btn" id="langToggle" aria-label="Switch language">FR</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <a href="index.html" class="back-link" data-en="← Home" data-fr="← Accueil" data-es="← Inicio">← Home</a>
+    <h1 class="heading" data-en="Modelist Corner" data-fr="Atelier Modélisme" data-es="Rincón del Modelista">Modelist Corner</h1>
+
+    <div class="split-panel">
+      <!-- Left: Pattern SVG Viewport -->
+      <div class="panel-left">
+        <div class="svg-viewport">
+          <svg viewBox="0 0 300 400" width="100%" height="100%" style="max-width:400px;">
+            <!-- Placeholder bodice front pattern outline -->
+            <path class="pattern-outline" d="M50 20 Q80 10 100 15 L110 15 Q140 10 160 25 L170 80 Q165 120 175 160 L180 200 Q150 210 100 210 Q60 210 40 200 L50 160 Q45 120 50 80 Z"/>
+            <!-- Dart -->
+            <path class="pattern-outline" d="M100 210 L95 150 L105 150 Z" stroke-dasharray="4 3"/>
+            <!-- Grain line -->
+            <line class="pattern-outline" x1="110" y1="40" x2="110" y2="190" stroke-dasharray="8 4"/>
+            <polygon class="pattern-outline" points="110,35 107,42 113,42"/>
+            <polygon class="pattern-outline" points="110,195 107,188 113,188"/>
+            <!-- Label -->
+            <text x="110" y="120" text-anchor="middle" font-size="10" fill="#6b7280" font-family="Inter, sans-serif" data-en="Front Bodice" data-fr="Devant buste" data-es="Delantero corpiño">Front Bodice</text>
+          </svg>
+          <div class="zoom-controls">
+            <button class="zoom-btn" title="Zoom in">+</button>
+            <button class="zoom-btn" title="Zoom out">−</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Modification Controls -->
+      <div class="panel-right">
+        <div class="controls-panel">
+          <details open>
+            <summary data-en="Adjustments" data-fr="Ajustements" data-es="Ajustes">Adjustments</summary>
+            <div class="section-body">
+              <div class="control-row">
+                <label data-en="Ease (cm)" data-fr="Aisance (cm)" data-es="Holgura (cm)">Ease (cm)</label>
+                <input type="number" value="4" step="0.5" min="0">
+              </div>
+              <div class="control-row">
+                <label data-en="Seam allowance (cm)" data-fr="Marge de couture (cm)" data-es="Margen de costura (cm)">Seam allowance (cm)</label>
+                <input type="number" value="1" step="0.5" min="0">
+              </div>
+              <div class="control-row">
+                <label data-en="Hem allowance (cm)" data-fr="Ourlet (cm)" data-es="Dobladillo (cm)">Hem allowance (cm)</label>
+                <input type="number" value="2" step="0.5" min="0">
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary data-en="Dart Controls" data-fr="Contrôle des pinces" data-es="Control de pinzas">Dart Controls</summary>
+            <div class="section-body">
+              <div class="control-row">
+                <label data-en="Dart angle (°)" data-fr="Angle de pince (°)" data-es="Ángulo de pinza (°)">Dart angle (°)</label>
+                <input type="number" value="12" step="1" min="0" max="90">
+              </div>
+              <div class="control-row">
+                <label data-en="Dart length (cm)" data-fr="Longueur de pince (cm)" data-es="Largo de pinza (cm)">Dart length (cm)</label>
+                <input type="number" value="8" step="0.5" min="0">
+              </div>
+            </div>
+          </details>
+
+          <details>
+            <summary data-en="AI Assistant" data-fr="Assistant IA" data-es="Asistente IA">AI Assistant</summary>
+            <div class="section-body">
+              <p style="font-size:0.8125rem; color:#6b7280; margin-bottom:12px;" data-en="Describe a modification in natural language." data-fr="Décrivez une modification en langage naturel." data-es="Describa una modificación en lenguaje natural.">Describe a modification in natural language.</p>
+              <div class="ai-input-row">
+                <input type="text" class="ai-text-input" placeholder="e.g. Add 2cm ease at hip" data-en-placeholder="e.g. Add 2cm ease at hip" data-fr-placeholder="ex. Ajouter 2cm d'aisance à la hanche" data-es-placeholder="ej. Añadir 2cm de holgura en la cadera">
+                <button class="ai-apply-btn" data-en="Apply" data-fr="Appliquer" data-es="Aplicar">Apply</button>
+              </div>
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var langs = ['en', 'fr', 'es'];
+    var langIndex = 0;
+
+    var langToggle = document.getElementById('langToggle');
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = document.getElementById('themeIcon');
+
+    function applyLanguage() {
+      var lang = langs[langIndex];
+      document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang);
+        if (val) el.textContent = val;
+      });
+      document.querySelectorAll('[data-' + lang + '-placeholder]').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang + '-placeholder');
+        if (val) el.placeholder = val;
+      });
+      var next = langs[(langIndex + 1) % langs.length];
+      langToggle.textContent = next.toUpperCase();
+    }
+
+    langToggle.addEventListener('click', function() {
+      langIndex = (langIndex + 1) % langs.length;
+      applyLanguage();
+    });
+
+    themeToggle.addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      var isDark = document.body.classList.contains('dark');
+      themeIcon.innerHTML = isDark
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    });
+
+    applyLanguage();
+  </script>
+
+</body>
+</html>

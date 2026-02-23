@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couture — Measurements</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      color: #111827;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .header {
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .header-inner {
+      max-width: 1152px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .brand {
+      font-size: 1.25rem; font-weight: 600; color: #111827;
+      text-decoration: none; transition: color 0.2s;
+    }
+
+    .brand:hover { color: #2563eb; }
+    .spacer { flex: 1; }
+
+    .header-btn {
+      padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      background: #fff; font-family: inherit; font-size: 0.8125rem;
+      font-weight: 600; color: #374151; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.3s;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .header-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+
+    .header-btn svg {
+      width: 16px; height: 16px; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+
+    .main {
+      max-width: 1152px; margin: 0 auto; padding: 40px 24px;
+    }
+
+    .heading {
+      font-size: 1.875rem; font-weight: 600; letter-spacing: -0.025em;
+      color: #111827; margin-bottom: 32px; transition: color 0.3s;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 999px; background: #eff6ff;
+      color: #2563eb; text-decoration: none; font-size: 0.8125rem;
+      font-weight: 600; margin-bottom: 24px; transition: background 0.15s;
+    }
+
+    .back-link:hover { background: #dbeafe; }
+
+    /* ---- Split Panel ---- */
+    .split-panel {
+      display: flex; gap: 32px;
+    }
+
+    .panel-left {
+      flex: 45;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .panel-right {
+      flex: 55;
+    }
+
+    /* ---- Body Silhouette ---- */
+    .silhouette-container {
+      position: sticky;
+      top: 24px;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .silhouette-container svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .body-outline {
+      fill: none;
+      stroke: #9ca3af;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .measure-line {
+      stroke: #d1d5db;
+      stroke-width: 1;
+      stroke-dasharray: 4 3;
+      transition: stroke 0.2s, stroke-width 0.2s;
+    }
+
+    .measure-line.active {
+      stroke: #2563eb;
+      stroke-width: 2;
+      stroke-dasharray: none;
+    }
+
+    .measure-label {
+      font-size: 7px;
+      fill: #9ca3af;
+      transition: fill 0.2s;
+    }
+
+    .measure-label.active {
+      fill: #2563eb;
+      font-weight: 600;
+    }
+
+    /* ---- Size Selector ---- */
+    .size-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .size-selector select {
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      color: #111827;
+      background: #fff;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .size-selector select:focus {
+      border-color: #2563eb;
+    }
+
+    /* ---- Measurement Grid ---- */
+    .measure-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+    }
+
+    .measure-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .measure-field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #374151;
+      transition: color 0.3s;
+    }
+
+    .measure-field .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .measure-field input[type="number"] {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      outline: none;
+      transition: border-color 0.15s;
+      min-width: 0;
+    }
+
+    .measure-field input[type="number"]:focus {
+      border-color: #2563eb;
+    }
+
+    .measure-field input[type="number"]:disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
+
+    .idk-label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.6875rem;
+      color: #6b7280;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .idk-label input[type="checkbox"] {
+      cursor: pointer;
+    }
+
+    .section-divider {
+      grid-column: 1 / -1;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #2563eb;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 8px 0 4px;
+      border-bottom: 1px solid #e5e7eb;
+      margin-top: 8px;
+      transition: color 0.3s, border-color 0.3s;
+    }
+
+    /* ---- Dark mode ---- */
+    body.dark { background: #111827; color: #f9fafb; }
+    body.dark .header { background: #1f2937; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    body.dark .brand { color: #f9fafb; }
+    body.dark .brand:hover { color: #60a5fa; }
+    body.dark .header-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    body.dark .header-btn:hover { background: #374151; border-color: #6b7280; }
+    body.dark .heading { color: #f9fafb; }
+    body.dark .back-link { background: #1e3a5f; color: #60a5fa; }
+    body.dark .back-link:hover { background: #1e4d8f; }
+
+    body.dark .body-outline { stroke: #6b7280; }
+    body.dark .measure-line { stroke: #4b5563; }
+    body.dark .measure-line.active { stroke: #60a5fa; }
+    body.dark .measure-label { fill: #6b7280; }
+    body.dark .measure-label.active { fill: #60a5fa; }
+
+    body.dark .size-selector select {
+      background: #1f2937; border-color: #4b5563; color: #f9fafb;
+    }
+    body.dark .size-selector select:focus { border-color: #60a5fa; }
+
+    body.dark .measure-field label { color: #d1d5db; }
+    body.dark .measure-field input[type="number"] {
+      background: #1f2937; border-color: #4b5563; color: #f9fafb;
+    }
+    body.dark .measure-field input[type="number"]:focus { border-color: #60a5fa; }
+    body.dark .measure-field input[type="number"]:disabled {
+      background: #111827; color: #6b7280;
+    }
+    body.dark .idk-label { color: #9ca3af; }
+    body.dark .section-divider { color: #60a5fa; border-color: #374151; }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 1023px) {
+      .split-panel { flex-direction: column; }
+      .panel-left { flex: none; }
+      .panel-right { flex: none; }
+      .silhouette-container {
+        position: static;
+        max-width: 220px;
+        margin: 0 auto 24px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .measure-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="brand">Couture</a>
+      <div class="spacer"></div>
+      <button class="header-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <button class="header-btn" id="langToggle" aria-label="Switch language">FR</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <a href="index.html" class="back-link" data-en="← Home" data-fr="← Accueil" data-es="← Inicio">← Home</a>
+    <h1 class="heading" data-en="Measurements" data-fr="Mesures" data-es="Medidas">Measurements</h1>
+
+    <div class="split-panel">
+      <!-- Left: Body Silhouette -->
+      <div class="panel-left">
+        <div class="silhouette-container">
+          <svg viewBox="0 0 200 500" xmlns="http://www.w3.org/2000/svg">
+            <!-- Head -->
+            <ellipse class="body-outline" cx="100" cy="30" rx="16" ry="20"/>
+            <!-- Neck -->
+            <path class="body-outline" d="M90 49 L90 62 M110 49 L110 62"/>
+            <!-- Shoulders & Torso -->
+            <path class="body-outline" d="M90 62 Q88 66 48 74 Q36 80 34 100 L32 140 Q34 170 44 190 Q38 210 34 240 Q32 260 36 280 Q44 300 56 320 L60 360 L58 410 Q56 440 54 460 L52 475 M110 62 Q112 66 152 74 Q164 80 166 100 L168 140 Q166 170 156 190 Q162 210 166 240 Q168 260 164 280 Q156 300 144 320 L140 360 L142 410 Q144 440 146 460 L148 475"/>
+            <!-- Feet -->
+            <path class="body-outline" d="M52 475 L46 478 L44 480 L54 480 L58 476 M148 475 L154 478 L156 480 L146 480 L142 476"/>
+            <!-- Arms -->
+            <path class="body-outline" d="M48 74 L28 88 Q18 110 16 150 L14 200 Q12 230 14 250 L16 260 M152 74 L172 88 Q182 110 184 150 L186 200 Q188 230 186 250 L184 260"/>
+            <!-- Hands -->
+            <path class="body-outline" d="M16 260 L14 266 L18 264 M184 260 L186 266 L182 264"/>
+            <!-- Inner legs -->
+            <path class="body-outline" d="M78 320 L80 360 L82 410 Q80 440 78 460 L76 475 M122 320 L120 360 L118 410 Q120 440 122 460 L124 475"/>
+            <path class="body-outline" d="M76 475 L72 478 L70 480 L80 480 L82 476 M124 475 L128 478 L130 480 L120 480 L118 476"/>
+
+            <!-- Measurement lines -->
+            <line id="line-neck_circumference" class="measure-line" x1="8" y1="58" x2="192" y2="58"/>
+            <text class="measure-label" x="194" y="61">9</text>
+
+            <line id="line-shoulder_length" class="measure-line" x1="8" y1="74" x2="192" y2="74"/>
+            <text class="measure-label" x="194" y="77">12</text>
+
+            <line id="line-full_bust" class="measure-line" x1="8" y1="130" x2="192" y2="130"/>
+            <text class="measure-label" x="194" y="133">3</text>
+
+            <line id="line-bust_height" class="measure-line" x1="8" y1="130" x2="8" y2="74" stroke="#d1d5db" stroke-width="1" stroke-dasharray="2 3"/>
+
+            <line id="line-full_waist" class="measure-line" x1="8" y1="190" x2="192" y2="190"/>
+            <text class="measure-label" x="194" y="193">6</text>
+
+            <line id="line-small_hip" class="measure-line" x1="8" y1="230" x2="192" y2="230"/>
+            <text class="measure-label" x="194" y="233">7</text>
+
+            <line id="line-full_hip" class="measure-line" x1="8" y1="250" x2="192" y2="250"/>
+            <text class="measure-label" x="194" y="253">8</text>
+
+            <line id="line-upper_arm" class="measure-line" x1="8" y1="100" x2="30" y2="100"/>
+            <text class="measure-label" x="4" y="97">16</text>
+
+            <line id="line-wrist" class="measure-line" x1="8" y1="255" x2="20" y2="255"/>
+            <text class="measure-label" x="4" y="252">18</text>
+
+            <line id="line-waist_to_knee" class="measure-line" x1="8" y1="380" x2="192" y2="380"/>
+            <text class="measure-label" x="194" y="383">22</text>
+
+            <line id="line-waist_to_floor" class="measure-line" x1="8" y1="475" x2="192" y2="475"/>
+            <text class="measure-label" x="194" y="478">23</text>
+
+            <line id="line-crotch_depth" class="measure-line" x1="8" y1="320" x2="192" y2="320"/>
+            <text class="measure-label" x="194" y="323">20</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Right: Inputs -->
+      <div class="panel-right">
+        <!-- Size Selector -->
+        <div class="size-selector">
+          <select id="countrySelect" aria-label="Country">
+            <option value="FR" data-en="France" data-fr="France" data-es="Francia">France</option>
+            <option value="US" data-en="United States" data-fr="États-Unis" data-es="Estados Unidos">United States</option>
+            <option value="UK" data-en="United Kingdom" data-fr="Royaume-Uni" data-es="Reino Unido">United Kingdom</option>
+          </select>
+          <select id="sizeSelect" aria-label="Size">
+            <option value="34">T34 (XS)</option>
+            <option value="36">T36 (S)</option>
+            <option value="38" selected>T38 (M)</option>
+            <option value="40">T40 (M/L)</option>
+            <option value="42">T42 (L)</option>
+            <option value="44">T44 (XL)</option>
+            <option value="46">T46 (XXL)</option>
+            <option value="48">T48 (XXXL)</option>
+          </select>
+        </div>
+
+        <!-- Measurement Fields -->
+        <div class="measure-grid">
+
+          <div class="section-divider" data-en="Lengths" data-fr="Longueurs" data-es="Longitudes">Lengths</div>
+
+          <div class="measure-field">
+            <label data-en="1. Back Waist Length" data-fr="1. Longueur taille dos" data-es="1. Largo talle espalda">1. Back Waist Length</label>
+            <div class="input-row">
+              <input type="number" data-field="back_waist_length" value="41.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="back_waist_length"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="2. Front Waist Length" data-fr="2. Longueur taille devant" data-es="2. Largo talle delantero">2. Front Waist Length</label>
+            <div class="input-row">
+              <input type="number" data-field="front_waist_length" value="37.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="front_waist_length"> ?</label>
+            </div>
+          </div>
+
+          <div class="section-divider" data-en="Circumferences" data-fr="Tours" data-es="Contornos">Circumferences</div>
+
+          <div class="measure-field">
+            <label data-en="3. Full Bust" data-fr="3. Tour de poitrine" data-es="3. Contorno de busto">3. Full Bust</label>
+            <div class="input-row">
+              <input type="number" data-field="full_bust" value="88.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="full_bust"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="4. Bust Height" data-fr="4. Hauteur de poitrine" data-es="4. Altura de busto">4. Bust Height</label>
+            <div class="input-row">
+              <input type="number" data-field="bust_height" value="22.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="bust_height"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="5. Bust Point Distance" data-fr="5. 1/2 écart de poitrine" data-es="5. Distancia entre puntos de busto">5. Bust Point Distance</label>
+            <div class="input-row">
+              <input type="number" data-field="half_bust_point_distance" value="9.25" step="0.25"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="half_bust_point_distance"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="6. Full Waist" data-fr="6. Tour de taille" data-es="6. Contorno de cintura">6. Full Waist</label>
+            <div class="input-row">
+              <input type="number" data-field="full_waist" value="68.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="full_waist"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="7. Small Hip" data-fr="7. Petites hanches" data-es="7. Cadera alta">7. Small Hip</label>
+            <div class="input-row">
+              <input type="number" data-field="small_hip" value="85.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="small_hip"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="8. Full Hip" data-fr="8. Tour de bassin" data-es="8. Contorno de cadera">8. Full Hip</label>
+            <div class="input-row">
+              <input type="number" data-field="full_hip" value="94.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="full_hip"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="9. Neck Circumference" data-fr="9. Tour d'encolure" data-es="9. Contorno de cuello">9. Neck Circumference</label>
+            <div class="input-row">
+              <input type="number" data-field="neck_circumference" value="36.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="neck_circumference"> ?</label>
+            </div>
+          </div>
+
+          <div class="section-divider" data-en="Widths" data-fr="Carrures" data-es="Anchos">Widths</div>
+
+          <div class="measure-field">
+            <label data-en="10. Half Back Width" data-fr="10. 1/2 carrure dos" data-es="10. Medio ancho espalda">10. Half Back Width</label>
+            <div class="input-row">
+              <input type="number" data-field="half_back_width" value="17.5" step="0.25"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="half_back_width"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="11. Half Front Width" data-fr="11. 1/2 carrure devant" data-es="11. Medio ancho delantero">11. Half Front Width</label>
+            <div class="input-row">
+              <input type="number" data-field="half_front_width" value="16.5" step="0.25"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="half_front_width"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="12. Shoulder Length" data-fr="12. Longueur d'épaule" data-es="12. Largo de hombro">12. Shoulder Length</label>
+            <div class="input-row">
+              <input type="number" data-field="shoulder_length" value="12.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="shoulder_length"> ?</label>
+            </div>
+          </div>
+
+          <div class="section-divider" data-en="Arm" data-fr="Bras" data-es="Brazo">Arm</div>
+
+          <div class="measure-field">
+            <label data-en="13. Armhole Circumference" data-fr="13. Tour d'emmanchure" data-es="13. Contorno de sisa">13. Armhole Circumference</label>
+            <div class="input-row">
+              <input type="number" data-field="armhole_circumference" value="39.5" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="armhole_circumference"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="14. Underarm Height" data-fr="14. Hauteur dessous de bras" data-es="14. Altura de axila">14. Underarm Height</label>
+            <div class="input-row">
+              <input type="number" data-field="underarm_height" value="21.5" step="0.25"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="underarm_height"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="15. Arm Length" data-fr="15. Longueur de bras" data-es="15. Largo de brazo">15. Arm Length</label>
+            <div class="input-row">
+              <input type="number" data-field="arm_length" value="60.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="arm_length"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="16. Upper Arm" data-fr="16. Grosseur de bras" data-es="16. Contorno de brazo">16. Upper Arm</label>
+            <div class="input-row">
+              <input type="number" data-field="upper_arm" value="26.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="upper_arm"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="17. Elbow Height" data-fr="17. Hauteur coude" data-es="17. Altura de codo">17. Elbow Height</label>
+            <div class="input-row">
+              <input type="number" data-field="elbow_height" value="35.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="elbow_height"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="18. Wrist" data-fr="18. Tour de poignet" data-es="18. Contorno de muñeca">18. Wrist</label>
+            <div class="input-row">
+              <input type="number" data-field="wrist" value="16.0" step="0.25"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="wrist"> ?</label>
+            </div>
+          </div>
+
+          <div class="section-divider" data-en="Lower Body" data-fr="Bas du corps" data-es="Parte inferior">Lower Body</div>
+
+          <div class="measure-field">
+            <label data-en="19. Waist to Hip" data-fr="19. Hauteur taille-bassin" data-es="19. Cintura a cadera">19. Waist to Hip</label>
+            <div class="input-row">
+              <input type="number" data-field="waist_to_hip" value="22.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="waist_to_hip"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="20. Crotch Depth" data-fr="20. Hauteur de montant" data-es="20. Profundidad de tiro">20. Crotch Depth</label>
+            <div class="input-row">
+              <input type="number" data-field="crotch_depth" value="26.5" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="crotch_depth"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="21. Crotch Length" data-fr="21. Enfourchure" data-es="21. Largo de entrepierna">21. Crotch Length</label>
+            <div class="input-row">
+              <input type="number" data-field="crotch_length" value="60.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="crotch_length"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="22. Waist to Knee" data-fr="22. Hauteur taille au genou" data-es="22. Cintura a rodilla">22. Waist to Knee</label>
+            <div class="input-row">
+              <input type="number" data-field="waist_to_knee" value="58.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="waist_to_knee"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="23. Waist to Floor" data-fr="23. Hauteur taille à terre" data-es="23. Cintura al suelo">23. Waist to Floor</label>
+            <div class="input-row">
+              <input type="number" data-field="waist_to_floor" value="105.0" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="waist_to_floor"> ?</label>
+            </div>
+          </div>
+
+          <div class="measure-field">
+            <label data-en="24. Side Waist to Floor" data-fr="24. Hauteur taille côté à terre" data-es="24. Cintura lateral al suelo">24. Side Waist to Floor</label>
+            <div class="input-row">
+              <input type="number" data-field="side_waist_to_floor" value="105.5" step="0.5"> cm
+              <label class="idk-label"><input type="checkbox" data-idk="side_waist_to_floor"> ?</label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var langs = ['en', 'fr', 'es'];
+    var langIndex = 0;
+
+    var langToggle = document.getElementById('langToggle');
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = document.getElementById('themeIcon');
+
+    function applyLanguage() {
+      var lang = langs[langIndex];
+      document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang);
+        if (val) el.textContent = val;
+      });
+      document.querySelectorAll('[data-' + lang + '-placeholder]').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang + '-placeholder');
+        if (val) el.placeholder = val;
+      });
+      var next = langs[(langIndex + 1) % langs.length];
+      langToggle.textContent = next.toUpperCase();
+    }
+
+    langToggle.addEventListener('click', function() {
+      langIndex = (langIndex + 1) % langs.length;
+      applyLanguage();
+    });
+
+    themeToggle.addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      var isDark = document.body.classList.contains('dark');
+      themeIcon.innerHTML = isDark
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    });
+
+    // "I don't know" checkboxes — disable the corresponding input
+    document.querySelectorAll('[data-idk]').forEach(function(cb) {
+      cb.addEventListener('change', function() {
+        var field = cb.getAttribute('data-idk');
+        var input = document.querySelector('[data-field="' + field + '"]');
+        if (input) {
+          input.disabled = cb.checked;
+        }
+      });
+    });
+
+    // Highlight SVG measurement line on input focus
+    document.querySelectorAll('[data-field]').forEach(function(input) {
+      var field = input.getAttribute('data-field');
+      var line = document.getElementById('line-' + field);
+
+      input.addEventListener('focus', function() {
+        // Clear previous highlights
+        document.querySelectorAll('.measure-line.active').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        document.querySelectorAll('.measure-label.active').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        // Highlight current
+        if (line) {
+          line.classList.add('active');
+          var label = line.nextElementSibling;
+          if (label && label.classList.contains('measure-label')) {
+            label.classList.add('active');
+          }
+        }
+      });
+    });
+
+    // Clear highlights when clicking outside inputs
+    document.addEventListener('click', function(e) {
+      if (!e.target.matches('[data-field]')) {
+        document.querySelectorAll('.measure-line.active').forEach(function(el) {
+          el.classList.remove('active');
+        });
+        document.querySelectorAll('.measure-label.active').forEach(function(el) {
+          el.classList.remove('active');
+        });
+      }
+    });
+
+    // Size table (French T38 base values with increments per size step)
+    var sizeTable = {
+      back_waist_length:        [41.0,  0.5],
+      front_waist_length:       [37.0,  0.5],
+      full_bust:                [88.0,  4.0],
+      bust_height:              [22.0,  0.5],
+      half_bust_point_distance: [9.25,  0.25],
+      full_waist:               [68.0,  4.0],
+      small_hip:                [85.0,  4.0],
+      full_hip:                 [94.0,  4.0],
+      neck_circumference:       [36.0,  1.0],
+      half_back_width:          [17.5,  0.25],
+      half_front_width:         [16.5,  0.25],
+      shoulder_length:          [12.0,  0.4],
+      armhole_circumference:    [39.5,  1.0],
+      underarm_height:          [21.5,  0.25],
+      arm_length:               [60.0,  0.0],
+      upper_arm:                [26.0,  1.0],
+      elbow_height:             [35.0,  0.0],
+      wrist:                    [16.0,  0.25],
+      waist_to_hip:             [22.0,  0.0],
+      crotch_depth:             [26.5,  0.5],
+      crotch_length:            [60.0,  2.0],
+      waist_to_knee:            [58.0,  1.0],
+      waist_to_floor:           [105.0, 0.5],
+      side_waist_to_floor:      [105.5, 1.0]
+    };
+
+    document.getElementById('sizeSelect').addEventListener('change', function() {
+      var size = parseInt(this.value);
+      var diff = (size - 38) / 2;
+      for (var field in sizeTable) {
+        var base = sizeTable[field][0];
+        var incr = sizeTable[field][1];
+        var input = document.querySelector('[data-field="' + field + '"]');
+        if (input && !input.disabled) {
+          input.value = (base + incr * diff).toFixed(input.step && input.step.indexOf('.') !== -1 ? input.step.split('.')[1].length : 1);
+        }
+      }
+    });
+
+    applyLanguage();
+  </script>
+
+</body>
+</html>

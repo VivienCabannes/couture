@@ -4,9 +4,9 @@ from dataclasses import dataclass, fields
 import numpy as np
 
 from app.core.measurements import FullMeasurements
+from app.core.pdf_renderer import PDFRenderer
 from app.core.stretch_pattern import StretchPattern
 from app.core.svg_renderer import SVGRenderer
-from app.core.pdf_renderer import PDFRenderer
 from app.core.utils import dichotomic_search
 
 
@@ -542,7 +542,7 @@ if __name__ == "__main__":
 
     corset_m = CorsetMeasurements.from_full_measurements(fm)
     pattern = CorsetPattern(corset_m)
-    pattern.stretch(horizontal=0.2, vertical=0.1)
+    pattern.stretch(horizontal=0.0, vertical=0.0)
 
     # Print Coordinates
     print("Construction Points:")

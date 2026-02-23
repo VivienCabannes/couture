@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couture — Sewing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      color: #111827;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .header {
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .header-inner {
+      max-width: 1152px; margin: 0 auto; padding: 24px;
+      display: flex; align-items: center; gap: 12px;
+    }
+
+    .brand {
+      font-size: 1.25rem; font-weight: 600; color: #111827;
+      text-decoration: none; transition: color 0.2s;
+    }
+
+    .brand:hover { color: #2563eb; }
+    .spacer { flex: 1; }
+
+    .header-btn {
+      padding: 6px 14px; border: 1px solid #d1d5db; border-radius: 8px;
+      background: #fff; font-family: inherit; font-size: 0.8125rem;
+      font-weight: 600; color: #374151; cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.3s;
+      display: flex; align-items: center; gap: 6px;
+    }
+
+    .header-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+
+    .header-btn svg {
+      width: 16px; height: 16px; stroke: currentColor; stroke-width: 2;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+
+    .main {
+      max-width: 1152px; margin: 0 auto; padding: 40px 24px;
+    }
+
+    .heading {
+      font-size: 1.875rem; font-weight: 600; letter-spacing: -0.025em;
+      color: #111827; margin-bottom: 32px; transition: color 0.3s;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 16px; border-radius: 999px; background: #eff6ff;
+      color: #2563eb; text-decoration: none; font-size: 0.8125rem;
+      font-weight: 600; margin-bottom: 24px; transition: background 0.15s;
+    }
+
+    .back-link:hover { background: #dbeafe; }
+
+    .panel-placeholder {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 0.875rem;
+      padding: 48px 24px;
+      text-align: center;
+      min-height: 300px;
+      gap: 12px;
+    }
+
+    .panel-placeholder svg {
+      width: 48px; height: 48px;
+      stroke: #9ca3af; stroke-width: 1.5;
+      stroke-linecap: round; stroke-linejoin: round; fill: none;
+    }
+
+    .dev-note {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 8px 16px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    /* ---- Dark mode ---- */
+    body.dark { background: #111827; color: #f9fafb; }
+    body.dark .header { background: #1f2937; box-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    body.dark .brand { color: #f9fafb; }
+    body.dark .brand:hover { color: #60a5fa; }
+    body.dark .header-btn { background: #1f2937; border-color: #4b5563; color: #d1d5db; }
+    body.dark .header-btn:hover { background: #374151; border-color: #6b7280; }
+    body.dark .heading { color: #f9fafb; }
+    body.dark .back-link { background: #1e3a5f; color: #60a5fa; }
+    body.dark .back-link:hover { background: #1e4d8f; }
+    body.dark .panel-placeholder { border-color: #4b5563; color: #9ca3af; }
+    body.dark .panel-placeholder svg { stroke: #6b7280; }
+    body.dark .dev-note { background: #78350f; color: #fcd34d; }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="brand">Couture</a>
+      <div class="spacer"></div>
+      <button class="header-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <button class="header-btn" id="langToggle" aria-label="Switch language">FR</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <a href="index.html" class="back-link" data-en="← Home" data-fr="← Accueil" data-es="← Inicio">← Home</a>
+    <h1 class="heading" data-en="Sewing" data-fr="Assemblage" data-es="Costura">Sewing</h1>
+
+    <div class="panel-placeholder">
+      <svg viewBox="0 0 24 24">
+        <circle cx="6" cy="6" r="3"/>
+        <path d="M8.12 8.12L12 12"/>
+        <path d="M20 4L8.12 15.88"/>
+        <circle cx="6" cy="18" r="3"/>
+        <path d="M14.8 14.8L20 20"/>
+      </svg>
+      <span data-en="Step-by-step assembly instructions" data-fr="Instructions d'assemblage étape par étape" data-es="Instrucciones de ensamblaje paso a paso">Step-by-step assembly instructions</span>
+      <div class="dev-note" data-en="Under development" data-fr="En cours de développement" data-es="En desarrollo">Under development</div>
+    </div>
+  </main>
+
+  <script>
+    var langs = ['en', 'fr', 'es'];
+    var langIndex = 0;
+
+    var langToggle = document.getElementById('langToggle');
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = document.getElementById('themeIcon');
+
+    function applyLanguage() {
+      var lang = langs[langIndex];
+      document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang);
+        if (val) el.textContent = val;
+      });
+      var next = langs[(langIndex + 1) % langs.length];
+      langToggle.textContent = next.toUpperCase();
+    }
+
+    langToggle.addEventListener('click', function() {
+      langIndex = (langIndex + 1) % langs.length;
+      applyLanguage();
+    });
+
+    themeToggle.addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      var isDark = document.body.classList.contains('dark');
+      themeIcon.innerHTML = isDark
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    });
+
+    applyLanguage();
+  </script>
+
+</body>
+</html>

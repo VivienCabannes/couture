@@ -1,8 +1,22 @@
-Add a README.md
 
-Think more of the design I want.
+Ajouter des pattrons: construction de la jupe, manche raglan
 
-Improve the front-end design.
+Long term dev: correct patttern construction
+
+UX:
+
+Add an option to switch languages.
+
+Add size for various country.
+
+Add an option to switch between black and light theme.
+
+Design for me, what would I want this app to be to ease as much as possible my user experience.
+
+Improve the back-end using the cli
+- remove the baby dress.
+- add ease.
+- add seam allowance.
 
 Make sure I can still use the back-end without going through the front-end
     - Create pdf to visualize them locally

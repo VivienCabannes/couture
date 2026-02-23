@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Couture — Designer Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #f9fafb;
+      min-height: 100vh;
+      color: #111827;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: #fff;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .header-inner {
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #111827;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .brand:hover {
+      color: #2563eb;
+    }
+
+    .spacer {
+      flex: 1;
+    }
+
+    .header-btn {
+      padding: 6px 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-btn:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+
+    .header-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* ---- Main ---- */
+    .main {
+      max-width: 1152px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .heading {
+      font-size: 1.875rem;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      color: #111827;
+      margin-bottom: 32px;
+      transition: color 0.3s;
+    }
+
+    /* ---- Back Link ---- */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #2563eb;
+      text-decoration: none;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      transition: background 0.15s;
+    }
+
+    .back-link:hover {
+      background: #dbeafe;
+    }
+
+    /* ---- Split Panel ---- */
+    .split-panel {
+      display: flex;
+      gap: 24px;
+      min-height: 60vh;
+    }
+
+    .split-panel > * {
+      flex: 1;
+    }
+
+    /* ---- Panel Placeholder ---- */
+    .panel-placeholder {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #6b7280;
+      font-size: 0.875rem;
+      padding: 24px;
+      text-align: center;
+      min-height: 200px;
+    }
+
+    /* ---- Canvas Panel ---- */
+    .canvas-toolbar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tool-btn {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .tool-btn:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+
+    .tool-btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: #374151;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* ---- Chat Panel ---- */
+    .chat-panel {
+      display: flex;
+      flex-direction: column;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #fff;
+      overflow: hidden;
+      transition: background 0.3s, border-color 0.3s;
+    }
+
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+    }
+
+    .chat-bubble {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: #2563eb;
+      color: #fff;
+    }
+
+    .chat-bubble.ai {
+      align-self: flex-start;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    .chat-input-bar {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid #e5e7eb;
+      transition: border-color 0.3s;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .chat-input:focus {
+      border-color: #2563eb;
+    }
+
+    .chat-send {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      background: #2563eb;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .chat-send:hover {
+      background: #1d4ed8;
+    }
+
+    /* ---- Dark mode ---- */
+    body.dark {
+      background: #111827;
+      color: #f9fafb;
+    }
+
+    body.dark .header {
+      background: #1f2937;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    body.dark .brand {
+      color: #f9fafb;
+    }
+
+    body.dark .brand:hover {
+      color: #60a5fa;
+    }
+
+    body.dark .header-btn {
+      background: #1f2937;
+      border-color: #4b5563;
+      color: #d1d5db;
+    }
+
+    body.dark .header-btn:hover {
+      background: #374151;
+      border-color: #6b7280;
+    }
+
+    body.dark .heading {
+      color: #f9fafb;
+    }
+
+    body.dark .back-link {
+      background: #1e3a5f;
+      color: #60a5fa;
+    }
+
+    body.dark .back-link:hover {
+      background: #1e4d8f;
+    }
+
+    body.dark .panel-placeholder {
+      border-color: #4b5563;
+      color: #9ca3af;
+    }
+
+    body.dark .tool-btn {
+      background: #1f2937;
+      border-color: #4b5563;
+    }
+
+    body.dark .tool-btn:hover {
+      background: #374151;
+      border-color: #6b7280;
+    }
+
+    body.dark .tool-btn svg {
+      stroke: #d1d5db;
+    }
+
+    body.dark .chat-panel {
+      background: #1f2937;
+      border-color: #374151;
+    }
+
+    body.dark .chat-bubble.ai {
+      background: #374151;
+      color: #f9fafb;
+    }
+
+    body.dark .chat-input-bar {
+      border-color: #374151;
+    }
+
+    body.dark .chat-input {
+      background: #111827;
+      border-color: #4b5563;
+      color: #f9fafb;
+    }
+
+    body.dark .chat-input:focus {
+      border-color: #60a5fa;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 1023px) {
+      .split-panel {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="brand">Couture</a>
+      <div class="spacer"></div>
+      <button class="header-btn" id="themeToggle" aria-label="Toggle dark mode">
+        <svg id="themeIcon" viewBox="0 0 24 24">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+        </svg>
+      </button>
+      <button class="header-btn" id="langToggle" aria-label="Switch language">FR</button>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="main">
+    <a href="index.html" class="back-link" data-en="← Home" data-fr="← Accueil" data-es="← Inicio">← Home</a>
+    <h1 class="heading" data-en="Designer Studio" data-fr="Atelier Création" data-es="Estudio de Diseño">Designer Studio</h1>
+
+    <div class="split-panel">
+      <!-- Left: Drawing Canvas -->
+      <div>
+        <div class="canvas-toolbar">
+          <button class="tool-btn" title="Pencil">
+            <svg viewBox="0 0 24 24"><path d="M17 3a2.83 2.83 0 114 4L7.5 20.5 2 22l1.5-5.5z"/></svg>
+          </button>
+          <button class="tool-btn" title="Line">
+            <svg viewBox="0 0 24 24"><line x1="5" y1="19" x2="19" y2="5"/></svg>
+          </button>
+          <button class="tool-btn" title="Curve">
+            <svg viewBox="0 0 24 24"><path d="M3 20Q12 4 21 20"/></svg>
+          </button>
+          <button class="tool-btn" title="Eraser">
+            <svg viewBox="0 0 24 24"><path d="M20 20H7L3 16l9-9 8 8-4 4"/><line x1="6" y1="20" x2="20" y2="20"/></svg>
+          </button>
+        </div>
+        <div class="panel-placeholder" style="flex: 1; min-height: 400px;" data-en="Drawing Canvas" data-fr="Canevas de dessin" data-es="Lienzo de dibujo">
+          Drawing Canvas
+        </div>
+      </div>
+
+      <!-- Right: AI Chat -->
+      <div class="chat-panel">
+        <div class="chat-messages">
+          <div class="chat-bubble user" data-en="A-line dress with a boat neckline" data-fr="Robe trapèze avec encolure bateau" data-es="Vestido evasé con escote barco">A-line dress with a boat neckline</div>
+          <div class="chat-bubble ai" data-en="Here's a sketch based on your description. The A-line silhouette flares gently from the bust. Would you like to adjust the hem length?" data-fr="Voici un croquis basé sur votre description. La silhouette trapèze s'évase doucement depuis le buste. Souhaitez-vous ajuster la longueur de l'ourlet ?" data-es="Aquí tienes un boceto basado en tu descripción. La silueta evasé se abre suavemente desde el busto. ¿Te gustaría ajustar el largo del dobladillo?">Here's a sketch based on your description. The A-line silhouette flares gently from the bust. Would you like to adjust the hem length?</div>
+          <div class="chat-bubble user" data-en="Make it knee-length and add cap sleeves" data-fr="Longueur genou avec des manches courtes" data-es="Hazlo hasta la rodilla y añade mangas cortas">Make it knee-length and add cap sleeves</div>
+        </div>
+        <div class="chat-input-bar">
+          <input type="text" class="chat-input" placeholder="Describe your design…" data-en-placeholder="Describe your design…" data-fr-placeholder="Décrivez votre design…" data-es-placeholder="Describa su diseño…">
+          <button class="chat-send" data-en="Send" data-fr="Envoyer" data-es="Enviar">Send</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    var langs = ['en', 'fr', 'es'];
+    var langIndex = 0;
+
+    var langToggle = document.getElementById('langToggle');
+    var themeToggle = document.getElementById('themeToggle');
+    var themeIcon = document.getElementById('themeIcon');
+
+    function applyLanguage() {
+      var lang = langs[langIndex];
+      document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang);
+        if (val) el.textContent = val;
+      });
+      // Update placeholders
+      document.querySelectorAll('[data-' + lang + '-placeholder]').forEach(function(el) {
+        var val = el.getAttribute('data-' + lang + '-placeholder');
+        if (val) el.placeholder = val;
+      });
+      var next = langs[(langIndex + 1) % langs.length];
+      langToggle.textContent = next.toUpperCase();
+    }
+
+    langToggle.addEventListener('click', function() {
+      langIndex = (langIndex + 1) % langs.length;
+      applyLanguage();
+    });
+
+    themeToggle.addEventListener('click', function() {
+      document.body.classList.toggle('dark');
+      var isDark = document.body.classList.contains('dark');
+      themeIcon.innerHTML = isDark
+        ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+        : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+    });
+
+    applyLanguage();
+  </script>
+
+</body>
+</html>

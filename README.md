@@ -79,6 +79,10 @@ Output (SVG and PDF) goes to `output/`.
 
 Edit the variables at the top of each script to customize measurements, stretch factors, and control parameters. For example, `cli/corset.py` lets you choose between named measurements, standard sizing, or fully custom values, and set `STRETCH_HORIZONTAL` / `STRETCH_VERTICAL`. `cli/sleeve.py` takes a `SleeveMeasurements` object, and `cli/baby_dress.py` takes a `Params` object with dimensions like total length, chest width, and seam allowances.
 
+## Vision & Roadmap
+
+See [docs/VISION.md](docs/VISION.md) for the project's mission, design philosophy, and roadmap.
+
 ## Project structure
 
 ```
