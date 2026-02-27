@@ -37,7 +37,7 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 
 ### Legacy (`old/`)
 
-- Contains the previous codebase. **Do not modify anything in `old/`.**
+- Contains the previous codebase. **NEVER ACCESS the `old/` directory.**
 
 ## Conventions
 
@@ -46,3 +46,9 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 - No `navigation/` folder — routing config lives at each app's root
 - i18n: EN, FR, ES — all three languages must always be present when adding strings
 - Tests mirror `app/` structure in `backend/tests/`
+- Comment complex logic, but avoid obvious comments (e.g. `// increment i` is not helpful)
+- Use descriptive variable and function names to reduce the need for comments
+- Follow consistent code formatting (e.g. Prettier for frontend, Black for backend)
+- Document every public function with a docstring explaining its purpose, parameters, and return value
+- Use type annotations in Python and TypeScript for better readability and maintainability
+- Document every feature and page in `PAGES.md` with a clear description of its purpose, user flow, and any important design considerations
