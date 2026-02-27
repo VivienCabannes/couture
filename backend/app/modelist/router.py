@@ -107,8 +107,18 @@ def _build_corset(req: PatternRequest):
 
 
 def _build_sleeve(req: PatternRequest):
-    """Build a sleeve pattern from request data."""
-    sleeve_m = SleeveMeasurements(**req.measurements)
+    """Build a sleeve pattern from request data.
+
+    Accepts either sleeve-specific fields (armhole_depth, armhole_measurement, ...)
+    or full body measurements (which are mapped via from_full_measurements).
+    """
+    if "armhole_depth" in req.measurements:
+        valid_fields = {f.name for f in SleeveMeasurements.__dataclass_fields__.values()}
+        filtered = {k: v for k, v in req.measurements.items() if k in valid_fields}
+        sleeve_m = SleeveMeasurements(**filtered)
+    else:
+        fm = FullMeasurements(**req.measurements)
+        sleeve_m = SleeveMeasurements.from_full_measurements(fm)
 
     control = SleeveControlParameters()
     if req.control_parameters:

@@ -4,7 +4,10 @@ Constructs a one-piece sleeve from armhole measurements using
 French pattern drafting methods with spline curve interpolation.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -12,6 +15,9 @@ from app.core.stretch_pattern import StretchPattern
 from app.core.svg_renderer import SVGRenderer
 from app.core.pdf_renderer import PDFRenderer
 from app.core.utils import cubic_spline_to_beziers
+
+if TYPE_CHECKING:
+    from app.core.measurements import FullMeasurements
 
 
 @dataclass
@@ -25,6 +31,25 @@ class SleeveMeasurements:
     sleeve_length: float = 60.0    # Longueur de manche (AC = 60 cm default)
     upper_arm_to_elbow: float = 35.0  # Distance from shoulder to elbow (AJ = 35 cm default)
     sleeve_bottom_width: float = 20.0  # Largeur bas de manche (configurable)
+
+    @classmethod
+    def from_full_measurements(cls, fm: FullMeasurements) -> SleeveMeasurements:
+        """Derive sleeve measurements from full body measurements.
+
+        Maps body measurements to construction measurements:
+        - armhole_depth ← underarm_height
+        - armhole_measurement ← armhole_circumference
+        - sleeve_length ← arm_length
+        - upper_arm_to_elbow ← elbow_height
+        - sleeve_bottom_width ← wrist
+        """
+        return cls(
+            armhole_depth=fm.underarm_height,
+            armhole_measurement=fm.armhole_circumference,
+            sleeve_length=fm.arm_length,
+            upper_arm_to_elbow=fm.elbow_height,
+            sleeve_bottom_width=fm.wrist,
+        )
 
 
 @dataclass

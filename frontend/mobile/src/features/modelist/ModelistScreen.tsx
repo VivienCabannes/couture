@@ -80,7 +80,7 @@ export function ModelistScreen() {
         ))}
       </View>
 
-      {activePiece && <PieceEditor piece={activePiece} colors={colors} />}
+      {activePiece && <PieceEditor key={activePiece.pattern_type} piece={activePiece} colors={colors} />}
     </ScreenWrapper>
   );
 }
