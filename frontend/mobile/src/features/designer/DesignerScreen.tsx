@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   PanResponder,
+  Modal,
+  Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import Svg, { Path } from "react-native-svg";
@@ -21,6 +23,7 @@ export function DesignerScreen() {
   const [tool, setTool] = useState<Tool>("pen");
   const [paths, setPaths] = useState<DrawPath[]>([]);
   const [notes, setNotes] = useState("");
+  const [showNotice, setShowNotice] = useState(true);
   const currentPath = useRef<string>("");
 
   const panResponder = useRef(
@@ -81,6 +84,39 @@ export function DesignerScreen() {
 
   return (
     <ScreenWrapper>
+      <Modal
+        visible={showNotice}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowNotice(false)}
+      >
+        <Pressable
+          style={styles.modalBackdrop}
+          onPress={() => setShowNotice(false)}
+        >
+          <View
+            style={[styles.modalCard, { backgroundColor: colors.surface }]}
+            onStartShouldSetResponder={() => true}
+          >
+            <View style={[styles.modalIcon, { backgroundColor: colors.warningBg }]}>
+              <Text style={{ fontSize: 24 }}>⚠️</Text>
+            </View>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>
+              {t("designer.underDevelopment")}
+            </Text>
+            <Text style={[styles.modalMessage, { color: colors.textSecondary }]}>
+              {t("designer.underDevelopmentMessage")}
+            </Text>
+            <TouchableOpacity
+              style={[styles.modalButton, { backgroundColor: colors.primary }]}
+              onPress={() => setShowNotice(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </Pressable>
+      </Modal>
+
       <PageHeading>{t("designer.title")}</PageHeading>
 
       {/* Tool buttons */}
@@ -220,5 +256,52 @@ const styles = StyleSheet.create({
     fontSize: 14,
     minHeight: 120,
     textAlignVertical: "top",
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalCard: {
+    marginHorizontal: 32,
+    borderRadius: 16,
+    padding: 32,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  modalMessage: {
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center",
+    marginBottom: 24,
+  },
+  modalButton: {
+    borderRadius: 8,
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
 });

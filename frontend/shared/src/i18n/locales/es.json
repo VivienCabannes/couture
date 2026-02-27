@@ -25,7 +25,9 @@
     "notesPlaceholder": "Anote ideas de dise\u00f1o, opciones de tela o notas de construcci\u00f3n\u2026",
     "pen": "L\u00e1piz",
     "eraser": "Borrador",
-    "clear": "Limpiar"
+    "clear": "Limpiar",
+    "underDevelopment": "En desarrollo",
+    "underDevelopmentMessage": "El Estudio de Diseño está en desarrollo. Las herramientas de dibujo y diseño estarán disponibles próximamente."
   },
   "shop": {
     "title": "Perchero de Patrones",

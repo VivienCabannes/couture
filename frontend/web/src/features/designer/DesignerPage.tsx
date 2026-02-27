@@ -12,6 +12,7 @@ export function DesignerPage() {
   const [drawing, setDrawing] = useState(false);
   const [notes, setNotes] = useState("");
   const [color, setColor] = useState("#000000");
+  const [showNotice, setShowNotice] = useState(true);
 
   const getPos = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -83,6 +84,38 @@ export function DesignerPage() {
 
   return (
     <>
+      {showNotice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowNotice(false)}
+        >
+          <div
+            className="mx-4 max-w-md rounded-2xl bg-white p-8 text-center shadow-xl dark:bg-gray-800"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/50">
+              <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-amber-600 dark:stroke-amber-400" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <h2 className="mb-2 text-lg font-bold text-gray-900 dark:text-gray-50">
+              {t("designer.underDevelopment")}
+            </h2>
+            <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
+              {t("designer.underDevelopmentMessage")}
+            </p>
+            <button
+              onClick={() => setShowNotice(false)}
+              className="rounded-lg bg-blue-600 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
       <BackLink />
       <PageHeading>{t("designer.title")}</PageHeading>
 

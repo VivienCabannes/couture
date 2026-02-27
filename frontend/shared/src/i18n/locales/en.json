@@ -25,7 +25,9 @@
     "notesPlaceholder": "Jot down design ideas, fabric choices, or construction notes\u2026",
     "pen": "Pen",
     "eraser": "Eraser",
-    "clear": "Clear"
+    "clear": "Clear",
+    "underDevelopment": "Under development",
+    "underDevelopmentMessage": "The Designer Studio is under development. Drawing and design tools will be available soon."
   },
   "shop": {
     "title": "Pattern Rack",

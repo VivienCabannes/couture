@@ -25,7 +25,9 @@
     "notesPlaceholder": "Notez vos id\u00e9es de design, choix de tissus ou notes de construction\u2026",
     "pen": "Crayon",
     "eraser": "Gomme",
-    "clear": "Effacer"
+    "clear": "Effacer",
+    "underDevelopment": "En cours de développement",
+    "underDevelopmentMessage": "L'Atelier Création est en cours de développement. Les outils de dessin et de design seront bientôt disponibles."
   },
   "shop": {
     "title": "Vestiaire des Patrons",
