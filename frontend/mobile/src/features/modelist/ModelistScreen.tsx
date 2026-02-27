@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SvgXml } from "react-native-svg";
 import { useTheme } from "../../hooks/useTheme";
+import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { ScreenWrapper, PageHeading } from "../../components";
 import { fetchPieces } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
@@ -22,6 +23,7 @@ import type { RootStackParamList } from "../../../App";
 export function ModelistScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { isWide } = useResponsiveLayout();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [allPieces, setAllPieces] = useState<PieceInfo[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -111,6 +113,7 @@ export function ModelistScreen() {
               piece={activePiece}
               initialMeasurements={measurementValues as unknown as Record<string, number>}
               colors={colors}
+              isWide={isWide}
             />
           )}
         </>
@@ -123,10 +126,12 @@ function PieceEditor({
   piece,
   initialMeasurements,
   colors,
+  isWide,
 }: {
   piece: PieceInfo;
   initialMeasurements?: Record<string, number>;
   colors: import("../../theme/colors").ColorPalette;
+  isWide: boolean;
 }) {
   const { t } = useTranslation();
   const form = usePatternForm({ type: piece.pattern_type, initialMeasurements });
@@ -138,17 +143,28 @@ function PieceEditor({
       : form.result.pattern_svg
     : null;
 
-  return (
+  const svgBlock = (
     <>
       {/* SVG Viewport */}
       <View
         style={[
-          styles.viewport,
+          isWide ? styles.viewportWide : styles.viewport,
           { backgroundColor: colors.surface, borderColor: colors.cardBorder },
         ]}
       >
         {svgContent ? (
-          <SvgXml xml={svgContent} width="100%" height="100%" />
+          <ScrollView
+            maximumZoomScale={5}
+            minimumZoomScale={1}
+            contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
+            style={{ flex: 1 }}
+          >
+            <SvgXml
+              xml={svgContent.replace(/<\?xml[^?]*\?>\s*/g, "")}
+              width="100%"
+              height="100%"
+            />
+          </ScrollView>
         ) : (
           <Text style={{ color: colors.textTertiary, fontSize: 14 }}>
             {t("modelist.noPreview")}
@@ -201,9 +217,24 @@ function PieceEditor({
           </TouchableOpacity>
         </View>
       )}
+    </>
+  );
 
-      {/* Controls */}
-      <PieceControls form={form} colors={colors} />
+  const controlsBlock = <PieceControls form={form} colors={colors} />;
+
+  if (isWide) {
+    return (
+      <View style={styles.wideRow}>
+        <View style={styles.wideLeft}>{svgBlock}</View>
+        <View style={styles.wideRight}>{controlsBlock}</View>
+      </View>
+    );
+  }
+
+  return (
+    <>
+      {svgBlock}
+      {controlsBlock}
     </>
   );
 }
@@ -435,8 +466,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "600",
   },
+  wideRow: {
+    flexDirection: "row",
+    gap: 24,
+  },
+  wideLeft: {
+    flex: 3,
+  },
+  wideRight: {
+    flex: 2,
+  },
   viewport: {
     aspectRatio: 4 / 3,
+    borderWidth: 1,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+    overflow: "hidden",
+  },
+  viewportWide: {
+    flex: 1,
+    minHeight: 500,
     borderWidth: 1,
     borderRadius: 12,
     justifyContent: "center",

@@ -5,6 +5,7 @@ import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { PieceTabs } from "./PieceTabs";
 import { PieceControls } from "./PieceControls";
+import { PatternPreview } from "./PatternPreview";
 import { fetchPieces } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
 import { useMeasurementsStore, useSelectionsStore } from "../../stores";
@@ -108,10 +109,7 @@ function PieceEditor({
       <div className="flex-[3]">
         <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors dark:border-gray-700 dark:bg-gray-800">
           {svgContent ? (
-            <div
-              className="h-full w-full overflow-auto p-4"
-              dangerouslySetInnerHTML={{ __html: svgContent }}
-            />
+            <PatternPreview svgContent={svgContent} />
           ) : (
             <p className="text-sm text-gray-400 dark:text-gray-500">
               {t("modelist.noPreview")}

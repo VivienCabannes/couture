@@ -140,7 +140,6 @@ class SVGRenderer:
         header = (
             f'<?xml version="1.0" encoding="UTF-8"?>\n'
             f'<svg xmlns="http://www.w3.org/2000/svg" '
-            f'width="{_fmt(width_mm)}mm" height="{_fmt(height_mm)}mm" '
             f'viewBox="0 0 {_fmt(width_mm)} {_fmt(height_mm)}">\n'
         )
         body = '\n'.join(f'  {el}' for el in self._elements)
