@@ -17,7 +17,7 @@ export function ShopPage() {
   const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment, removeGarment } =
     useSelectionsStore();
   const [showWarning, setShowWarning] = useState(false);
-  const warningTimer = useRef<ReturnType<typeof setTimeout>>();
+  const warningTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     fetchPieces()
