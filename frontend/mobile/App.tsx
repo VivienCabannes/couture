@@ -49,15 +49,13 @@ function AppNavigator() {
           headerTintColor: colors.text,
           headerStyle: { backgroundColor: colors.headerBg },
           headerTitleStyle: { color: colors.text, fontWeight: "600" },
+          headerRight: () => <HeaderActions />,
         }}
       >
         <Stack.Screen
           name="Home"
           component={HomeScreen}
-          options={{
-            title: "Couture",
-            headerRight: () => <HeaderActions />,
-          }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Designer"

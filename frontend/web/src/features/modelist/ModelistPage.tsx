@@ -19,7 +19,8 @@ export function ModelistPage() {
   const [activeIdx, setActiveIdx] = useState(0);
   const { values: measurementValues, loaded: measurementsLoaded, fetch: fetchMeasurements } =
     useMeasurementsStore();
-  const { loaded: selectionsLoaded, fetch: fetchSelections } = useSelectionsStore();
+  const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment } =
+    useSelectionsStore();
 
   useEffect(() => {
     if (!measurementsLoaded) fetchMeasurements();
@@ -41,6 +42,16 @@ export function ModelistPage() {
 
   const activePiece: PieceInfo | null = garment?.pieces[activeIdx] ?? null;
 
+  const isSelected = (name: string) =>
+    selections.some((s) => s.garment_name === name);
+
+  const handlePickGarment = async (g: GarmentInfo) => {
+    if (!isSelected(g.name)) {
+      await addGarment(g.name);
+    }
+    navigate(`/modelist/${g.name}`);
+  };
+
   // When no garmentType in URL, show a garment picker
   if (!garmentType && allGarments.length > 0) {
     return (
@@ -54,9 +65,20 @@ export function ModelistPage() {
           {allGarments.map((g) => (
             <button
               key={g.name}
-              onClick={() => navigate(`/modelist/${g.name}`)}
-              className="rounded-xl border border-gray-200 bg-white p-4 text-left transition-colors hover:border-blue-400 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
+              onClick={() => handlePickGarment(g)}
+              className={`relative rounded-xl border p-4 text-left transition-colors ${
+                isSelected(g.name)
+                  ? "border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20"
+                  : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
+              }`}
             >
+              {isSelected(g.name) && (
+                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+              )}
               <div className="text-base font-semibold text-gray-900 dark:text-gray-50">
                 {g.label}
               </div>
