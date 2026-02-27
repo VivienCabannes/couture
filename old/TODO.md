@@ -1,4 +1,22 @@
 
+I want to modify the organization of the cards in the main menu. I want to put the measurements on the top right, and the help of the bottom right, separated from the rest of the by a bigger horizontal spacing and a slight vertical bar to separate it from the rest.
+
+- Clean the docs and the readme.
+- Populate the prototype with the existing pattern maker tool
+- Work on the measurements.
+
+Webapp
+App sur ordinateur
+App hosted online working on the browser
+App on tablet.
+
+Add a `license` file in the docs/
+
+For the name, try to optimize SEO, couture is too generic
+
+How to do unit tests for the front-end.
+
+
 Ajouter des pattrons: construction de la jupe, manche raglan
 
 Long term dev: correct patttern construction
