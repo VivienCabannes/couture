@@ -24,6 +24,12 @@ ENV/
 *.png
 *.pdf
 *.svg
+!frontend/web/src-tauri/icons/*.png
+!frontend/mobile/assets/*.png
+
+# Tauri
+**/src-tauri/target/
+**/src-tauri/gen/
 
 # Docker
 docker-compose.override.yml
