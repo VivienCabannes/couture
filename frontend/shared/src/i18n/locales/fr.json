@@ -54,7 +54,9 @@
     "advancedControls": "Contr\u00f4les avanc\u00e9s",
     "noPreview": "G\u00e9n\u00e9rez un patron pour voir l'aper\u00e7u",
     "noGarment": "Aucun v\u00eatement s\u00e9lectionn\u00e9",
-    "chooseGarment": "Choisissez un v\u00eatement pour commencer :"
+    "chooseGarment": "Choisissez un v\u00eatement pour commencer :",
+    "noPiecesSelected": "Aucun patron s\u00e9lectionn\u00e9. Rendez-vous au Vestiaire des Patrons pour choisir des patrons.",
+    "goToRack": "Aller au Vestiaire"
   },
   "measurements": {
     "title": "Mesures",
@@ -95,6 +97,11 @@
     "title": "Assemblage",
     "placeholder": "Instructions d'assemblage \u00e9tape par \u00e9tape",
     "underDevelopment": "En cours de d\u00e9veloppement"
+  },
+  "patterns": {
+    "corset": "Corsage",
+    "sleeve": "Manche",
+    "top": "Haut / Corsage de Base"
   },
   "help": {
     "title": "Aide",

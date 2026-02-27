@@ -1,25 +1,22 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { PieceTabs } from "./PieceTabs";
 import { PieceControls } from "./PieceControls";
-import { fetchGarments } from "@shared/api";
+import { fetchPieces } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
 import { useMeasurementsStore, useSelectionsStore } from "../../stores";
-import type { GarmentInfo, PieceInfo } from "@shared/types/patterns";
+import type { PieceInfo } from "@shared/types/patterns";
 
 export function ModelistPage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { garmentType } = useParams<{ garmentType: string }>();
-  const [garment, setGarment] = useState<GarmentInfo | null>(null);
-  const [allGarments, setAllGarments] = useState<GarmentInfo[]>([]);
+  const [allPieces, setAllPieces] = useState<PieceInfo[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const { values: measurementValues, loaded: measurementsLoaded, fetch: fetchMeasurements } =
     useMeasurementsStore();
-  const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment } =
+  const { selections, loaded: selectionsLoaded, fetch: fetchSelections } =
     useSelectionsStore();
 
   useEffect(() => {
@@ -31,63 +28,30 @@ export function ModelistPage() {
   }, [selectionsLoaded, fetchSelections]);
 
   useEffect(() => {
-    fetchGarments().then((garments) => {
-      setAllGarments(garments);
-      if (garmentType) {
-        const found = garments.find((g) => g.name === garmentType);
-        if (found) setGarment(found);
-      }
-    });
-  }, [garmentType]);
+    fetchPieces().then(setAllPieces);
+  }, []);
 
-  const activePiece: PieceInfo | null = garment?.pieces[activeIdx] ?? null;
+  const selectedPieces = allPieces.filter((p) =>
+    selections.some((s) => s.garment_name === p.pattern_type),
+  );
 
-  const isSelected = (name: string) =>
-    selections.some((s) => s.garment_name === name);
+  const activePiece: PieceInfo | null = selectedPieces[activeIdx] ?? selectedPieces[0] ?? null;
 
-  const handlePickGarment = async (g: GarmentInfo) => {
-    if (!isSelected(g.name)) {
-      await addGarment(g.name);
-    }
-    navigate(`/modelist/${g.name}`);
-  };
-
-  // When no garmentType in URL, show a garment picker
-  if (!garmentType && allGarments.length > 0) {
+  // No pieces selected — prompt user to visit the Pattern Rack
+  if (selectionsLoaded && allPieces.length > 0 && selectedPieces.length === 0) {
     return (
       <>
         <BackLink />
         <PageHeading>{t("modelist.title")}</PageHeading>
         <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
-          {t("modelist.chooseGarment")}
+          {t("modelist.noPiecesSelected")}
         </p>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {allGarments.map((g) => (
-            <button
-              key={g.name}
-              onClick={() => handlePickGarment(g)}
-              className={`relative rounded-xl border p-4 text-left transition-colors ${
-                isSelected(g.name)
-                  ? "border-blue-400 bg-blue-50 dark:border-blue-500 dark:bg-blue-900/20"
-                  : "border-gray-200 bg-white hover:border-blue-400 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
-              }`}
-            >
-              {isSelected(g.name) && (
-                <div className="absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full bg-blue-500 text-white">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-              )}
-              <div className="text-base font-semibold text-gray-900 dark:text-gray-50">
-                {g.label}
-              </div>
-              <div className="text-[0.8125rem] text-gray-500 dark:text-gray-400">
-                {t("shop.pieces", { count: g.pieces.length })}
-              </div>
-            </button>
-          ))}
-        </div>
+        <Link
+          to="/shop"
+          className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+        >
+          {t("modelist.goToRack")}
+        </Link>
       </>
     );
   }
@@ -97,14 +61,14 @@ export function ModelistPage() {
       <BackLink />
       <PageHeading>{t("modelist.title")}</PageHeading>
 
-      {!garment ? (
+      {selectedPieces.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
           {t("shop.loading")}
         </p>
       ) : (
         <>
           <PieceTabs
-            pieces={garment.pieces}
+            pieces={selectedPieces}
             activeIdx={activeIdx}
             onSelect={setActiveIdx}
           />

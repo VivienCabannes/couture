@@ -54,7 +54,9 @@
     "advancedControls": "Controles avanzados",
     "noPreview": "Genere un patr\u00f3n para ver la vista previa",
     "noGarment": "Ning\u00fan patr\u00f3n seleccionado",
-    "chooseGarment": "Elija una prenda para comenzar:"
+    "chooseGarment": "Elija una prenda para comenzar:",
+    "noPiecesSelected": "No hay patrones seleccionados. Visite el Perchero de Patrones para elegir patrones.",
+    "goToRack": "Ir al Perchero"
   },
   "measurements": {
     "title": "Medidas",
@@ -95,6 +97,11 @@
     "title": "Costura",
     "placeholder": "Instrucciones de ensamblaje paso a paso",
     "underDevelopment": "En desarrollo"
+  },
+  "patterns": {
+    "corset": "Corpiño",
+    "sleeve": "Manga",
+    "top": "Blusa / Patrón Base de Corpiño"
   },
   "help": {
     "title": "Ayuda",

@@ -34,6 +34,12 @@ def list_garments():
     return list(GARMENTS.values())
 
 
+@router.get("/pieces", response_model=list[PieceInfo])
+def list_pieces():
+    """List all individual pattern pieces available in the shop."""
+    return [p for g in GARMENTS.values() for p in g.pieces]
+
+
 @router.get("/selections", response_model=list[GarmentSelectionResponse])
 def list_selections(db: Session = Depends(get_db)):
     """List all selected garments with their adjustments."""

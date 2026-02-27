@@ -18,7 +18,6 @@ export function App() {
           <Route path="/designer" element={<DesignerPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/modelist" element={<ModelistPage />} />
-          <Route path="/modelist/:garmentType" element={<ModelistPage />} />
           <Route path="/measurements" element={<MeasurementsPage />} />
           <Route path="/sewing" element={<SewingPage />} />
           <Route path="/help" element={<HelpPage />} />

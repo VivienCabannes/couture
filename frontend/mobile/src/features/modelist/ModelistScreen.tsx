@@ -6,43 +6,62 @@ import {
   ScrollView,
   TextInput,
   StyleSheet,
-  useWindowDimensions,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { useRoute } from "@react-navigation/native";
-import type { RouteProp } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SvgXml } from "react-native-svg";
 import { useTheme } from "../../hooks/useTheme";
 import { ScreenWrapper, PageHeading } from "../../components";
-import { fetchGarments } from "@shared/api";
+import { fetchPieces } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
-import type { GarmentInfo, PieceInfo } from "@shared/types/patterns";
+import { useSelectionsStore, useMeasurementsStore } from "../../stores";
+import type { PieceInfo } from "@shared/types/patterns";
 import type { RootStackParamList } from "../../../App";
 
 export function ModelistScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const route = useRoute<RouteProp<RootStackParamList, "Modelist">>();
-  const garmentType = route.params.garmentType;
-  const [garment, setGarment] = useState<GarmentInfo | null>(null);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [allPieces, setAllPieces] = useState<PieceInfo[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const { values: measurementValues, loaded: measurementsLoaded, fetch: fetchMeasurements } =
+    useMeasurementsStore();
+  const { selections, loaded: selectionsLoaded, fetch: fetchSelections } =
+    useSelectionsStore();
 
   useEffect(() => {
-    fetchGarments().then((garments) => {
-      const found = garments.find((g) => g.name === garmentType);
-      if (found) setGarment(found);
-    });
-  }, [garmentType]);
+    if (!measurementsLoaded) fetchMeasurements();
+  }, [measurementsLoaded, fetchMeasurements]);
 
-  const activePiece: PieceInfo | null = garment?.pieces[activeIdx] ?? null;
+  useEffect(() => {
+    if (!selectionsLoaded) fetchSelections();
+  }, [selectionsLoaded, fetchSelections]);
 
-  if (!garment) {
+  useEffect(() => {
+    fetchPieces().then(setAllPieces);
+  }, []);
+
+  const selectedPieces = allPieces.filter((p) =>
+    selections.some((s) => s.garment_name === p.pattern_type),
+  );
+
+  const activePiece: PieceInfo | null = selectedPieces[activeIdx] ?? selectedPieces[0] ?? null;
+
+  // No pieces selected — prompt user to visit the Pattern Rack
+  if (selectionsLoaded && allPieces.length > 0 && selectedPieces.length === 0) {
     return (
       <ScreenWrapper>
         <PageHeading>{t("modelist.title")}</PageHeading>
         <Text style={[styles.message, { color: colors.textSecondary }]}>
-          {t("shop.loading")}
+          {t("modelist.noPiecesSelected")}
         </Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Shop")}
+          style={[styles.goToRackBtn, { backgroundColor: colors.primary }]}
+        >
+          <Text style={styles.goToRackText}>{t("modelist.goToRack")}</Text>
+        </TouchableOpacity>
       </ScreenWrapper>
     );
   }
@@ -51,50 +70,66 @@ export function ModelistScreen() {
     <ScreenWrapper>
       <PageHeading>{t("modelist.title")}</PageHeading>
 
-      {/* Tab bar */}
-      <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
-        {garment.pieces.map((piece, idx) => (
-          <TouchableOpacity
-            key={piece.pattern_type}
-            onPress={() => setActiveIdx(idx)}
-            style={[
-              styles.tab,
-              {
-                backgroundColor:
-                  activeIdx === idx ? colors.surface : "transparent",
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.tabText,
-                {
-                  color:
-                    activeIdx === idx ? colors.text : colors.textSecondary,
-                },
-              ]}
-            >
-              {piece.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {selectedPieces.length === 0 ? (
+        <Text style={[styles.message, { color: colors.textSecondary }]}>
+          {t("shop.loading")}
+        </Text>
+      ) : (
+        <>
+          {/* Tab bar */}
+          <View style={[styles.tabBar, { backgroundColor: colors.background }]}>
+            {selectedPieces.map((piece, idx) => (
+              <TouchableOpacity
+                key={piece.pattern_type}
+                onPress={() => setActiveIdx(idx)}
+                style={[
+                  styles.tab,
+                  {
+                    backgroundColor:
+                      activeIdx === idx ? colors.surface : "transparent",
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.tabText,
+                    {
+                      color:
+                        activeIdx === idx ? colors.text : colors.textSecondary,
+                    },
+                  ]}
+                >
+                  {t(`patterns.${piece.pattern_type}`)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
-      {activePiece && <PieceEditor key={activePiece.pattern_type} piece={activePiece} colors={colors} />}
+          {activePiece && measurementsLoaded && (
+            <PieceEditor
+              key={activePiece.pattern_type}
+              piece={activePiece}
+              initialMeasurements={measurementValues as unknown as Record<string, number>}
+              colors={colors}
+            />
+          )}
+        </>
+      )}
     </ScreenWrapper>
   );
 }
 
 function PieceEditor({
   piece,
+  initialMeasurements,
   colors,
 }: {
   piece: PieceInfo;
+  initialMeasurements?: Record<string, number>;
   colors: import("../../theme/colors").ColorPalette;
 }) {
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
-  const form = usePatternForm({ type: piece.pattern_type });
+  const form = usePatternForm({ type: piece.pattern_type, initialMeasurements });
   const [view, setView] = useState<"construction" | "pattern">("construction");
 
   const svgContent = form.result
@@ -371,6 +406,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 48,
     fontSize: 14,
+  },
+  goToRackBtn: {
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignSelf: "flex-start",
+  },
+  goToRackText: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "600",
   },
   tabBar: {
     flexDirection: "row",

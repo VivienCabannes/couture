@@ -1,8 +1,12 @@
 import { apiFetch } from "./client";
-import type { GarmentInfo, PatternRequest, PatternResponse, PatternTypeInfo } from "../types/patterns";
+import type { GarmentInfo, PatternRequest, PatternResponse, PatternTypeInfo, PieceInfo } from "../types/patterns";
 
 export function fetchGarments(): Promise<GarmentInfo[]> {
   return apiFetch<GarmentInfo[]>("/api/shop/garments");
+}
+
+export function fetchPieces(): Promise<PieceInfo[]> {
+  return apiFetch<PieceInfo[]>("/api/shop/pieces");
 }
 
 export function fetchPatternTypes(): Promise<PatternTypeInfo[]> {

@@ -93,9 +93,7 @@ export function NavigationCard({ screen, labelKey, subtitleKey, style }: Props) 
       style={[styles.card, { backgroundColor: colors.card }, style]}
       activeOpacity={0.7}
       onPress={() => {
-        // Modelist requires garmentType param; route through Shop instead
-        const target = screen === "Modelist" ? "Shop" : screen;
-        (navigation.navigate as (screen: string) => void)(target);
+        (navigation.navigate as (screen: string) => void)(screen);
       }}
     >
       <View style={[styles.iconBox, { backgroundColor: colors.primaryBg }]}>

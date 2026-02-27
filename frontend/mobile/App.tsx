@@ -2,7 +2,7 @@ import "./src/i18n";
 
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useTranslation } from "react-i18next";
+
 import { ThemeProvider } from "./src/theme/ThemeProvider";
 import { useTheme } from "./src/hooks/useTheme";
 import { HeaderActions } from "./src/components/HeaderActions";
@@ -18,7 +18,7 @@ export type RootStackParamList = {
   Home: undefined;
   Designer: undefined;
   Shop: undefined;
-  Modelist: { garmentType: string };
+  Modelist: undefined;
   Measurements: undefined;
   Sewing: undefined;
   Help: undefined;
@@ -28,7 +28,6 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function AppNavigator() {
   const { isDark, colors } = useTheme();
-  const { t } = useTranslation();
 
   const navTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
@@ -60,32 +59,32 @@ function AppNavigator() {
         <Stack.Screen
           name="Designer"
           component={DesignerScreen}
-          options={{ title: t("designer.title") }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Shop"
           component={ShopScreen}
-          options={{ title: t("shop.title") }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Modelist"
           component={ModelistScreen}
-          options={{ title: t("modelist.title") }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Measurements"
           component={MeasurementsScreen}
-          options={{ title: t("measurements.title") }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Sewing"
           component={SewingScreen}
-          options={{ title: t("sewing.title") }}
+          options={{ title: "Couture" }}
         />
         <Stack.Screen
           name="Help"
           component={HelpScreen}
-          options={{ title: t("help.title") }}
+          options={{ title: "Couture" }}
         />
       </Stack.Navigator>
     </NavigationContainer>

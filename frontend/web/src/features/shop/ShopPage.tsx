@@ -4,22 +4,22 @@ import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { PatternCard } from "./PatternCard";
-import { fetchGarments } from "@shared/api";
+import { fetchPieces } from "@shared/api";
 import { useSelectionsStore } from "../../stores";
-import type { GarmentInfo } from "@shared/types/patterns";
+import type { PieceInfo } from "@shared/types/patterns";
 
 export function ShopPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [garments, setGarments] = useState<GarmentInfo[]>([]);
+  const [pieces, setPieces] = useState<PieceInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment, removeGarment } =
     useSelectionsStore();
 
   useEffect(() => {
-    fetchGarments()
-      .then(setGarments)
+    fetchPieces()
+      .then(setPieces)
       .catch(() => setError(t("shop.error")))
       .finally(() => setLoading(false));
   }, [t]);
@@ -28,15 +28,15 @@ export function ShopPage() {
     if (!selectionsLoaded) fetchSelections();
   }, [selectionsLoaded, fetchSelections]);
 
-  const isSelected = (name: string) =>
-    selections.some((s) => s.garment_name === name);
+  const isSelected = (patternType: string) =>
+    selections.some((s) => s.garment_name === patternType);
 
-  const handleToggle = async (garment: GarmentInfo) => {
-    if (isSelected(garment.name)) {
-      await removeGarment(garment.name);
+  const handleToggle = async (piece: PieceInfo) => {
+    if (isSelected(piece.pattern_type)) {
+      await removeGarment(piece.pattern_type);
     } else {
-      await addGarment(garment.name);
-      navigate(`/modelist/${garment.name}`);
+      await addGarment(piece.pattern_type);
+      navigate("/modelist");
     }
   };
 
@@ -57,13 +57,12 @@ export function ShopPage() {
 
       {!loading && !error && (
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {garments.map((g) => (
+          {pieces.map((piece) => (
             <PatternCard
-              key={g.name}
-              garment={g}
-              selected={isSelected(g.name)}
-              onToggle={() => handleToggle(g)}
-              onClick={() => navigate(`/modelist/${g.name}`)}
+              key={piece.pattern_type}
+              piece={piece}
+              selected={isSelected(piece.pattern_type)}
+              onToggle={() => handleToggle(piece)}
             />
           ))}
         </div>

@@ -1,23 +1,32 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
-import type { GarmentInfo } from "@shared/types/patterns";
+import type { PieceInfo } from "@shared/types/patterns";
 
 interface Props {
-  garment: GarmentInfo;
-  onPress: () => void;
+  piece: PieceInfo;
+  selected: boolean;
+  onToggle: () => void;
 }
 
-export function PatternCard({ garment, onPress }: Props) {
+export function PatternCard({ piece, selected, onToggle }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.card, { backgroundColor: colors.card }]}
-      activeOpacity={0.7}
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.card },
+        selected && { borderColor: colors.primary, borderWidth: 2 },
+      ]}
     >
+      {selected && (
+        <View style={[styles.checkBadge, { backgroundColor: colors.primary }]}>
+          <Text style={styles.checkMark}>✓</Text>
+        </View>
+      )}
+
       <View
         style={[
           styles.illustration,
@@ -31,13 +40,29 @@ export function PatternCard({ garment, onPress }: Props) {
 
       <View style={styles.content}>
         <Text style={[styles.name, { color: colors.text }]}>
-          {garment.label}
+          {t(`patterns.${piece.pattern_type}`)}
         </Text>
-        <Text style={[styles.desc, { color: colors.textSecondary }]}>
-          {t("shop.pieces", { count: garment.pieces.length })}
-        </Text>
+        <TouchableOpacity
+          onPress={onToggle}
+          style={[
+            styles.toggleBtn,
+            {
+              backgroundColor: selected ? "#FEF2F2" : colors.primary,
+            },
+          ]}
+          activeOpacity={0.7}
+        >
+          <Text
+            style={[
+              styles.toggleText,
+              { color: selected ? "#DC2626" : "#fff" },
+            ]}
+          >
+            {selected ? t("shop.remove") : t("shop.add")}
+          </Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
@@ -52,6 +77,22 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
+  checkBadge: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 10,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  checkMark: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
   illustration: {
     height: 140,
     justifyContent: "center",
@@ -63,10 +104,15 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
+    marginBottom: 12,
   },
-  desc: {
-    fontSize: 13,
-    lineHeight: 18,
+  toggleBtn: {
+    borderRadius: 8,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  toggleText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

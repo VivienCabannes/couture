@@ -6,24 +6,43 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "../../hooks/useTheme";
 import { ScreenWrapper, PageHeading } from "../../components";
 import { PatternCard } from "./PatternCard";
-import { fetchGarments } from "@shared/api";
-import type { GarmentInfo } from "@shared/types/patterns";
+import { fetchPieces } from "@shared/api";
+import { useSelectionsStore } from "../../stores";
+import type { PieceInfo } from "@shared/types/patterns";
 import type { RootStackParamList } from "../../../App";
 
 export function ShopScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [garments, setGarments] = useState<GarmentInfo[]>([]);
+  const [pieces, setPieces] = useState<PieceInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment, removeGarment } =
+    useSelectionsStore();
 
   useEffect(() => {
-    fetchGarments()
-      .then(setGarments)
+    fetchPieces()
+      .then(setPieces)
       .catch(() => setError(t("shop.error")))
       .finally(() => setLoading(false));
   }, [t]);
+
+  useEffect(() => {
+    if (!selectionsLoaded) fetchSelections();
+  }, [selectionsLoaded, fetchSelections]);
+
+  const isSelected = (patternType: string) =>
+    selections.some((s) => s.garment_name === patternType);
+
+  const handleToggle = async (piece: PieceInfo) => {
+    if (isSelected(piece.pattern_type)) {
+      await removeGarment(piece.pattern_type);
+    } else {
+      await addGarment(piece.pattern_type);
+      navigation.navigate("Modelist");
+    }
+  };
 
   return (
     <ScreenWrapper scrollable={false}>
@@ -41,12 +60,13 @@ export function ShopScreen() {
 
       {!loading && !error && (
         <FlatList
-          data={garments}
-          keyExtractor={(item) => item.name}
+          data={pieces}
+          keyExtractor={(item) => item.pattern_type}
           renderItem={({ item }) => (
             <PatternCard
-              garment={item}
-              onPress={() => navigation.navigate("Modelist", { garmentType: item.name })}
+              piece={item}
+              selected={isSelected(item.pattern_type)}
+              onToggle={() => handleToggle(item)}
             />
           )}
           contentContainerStyle={styles.list}

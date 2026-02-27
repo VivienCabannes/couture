@@ -54,7 +54,9 @@
     "advancedControls": "Advanced Controls",
     "noPreview": "Generate a pattern to see the preview",
     "noGarment": "No garment selected",
-    "chooseGarment": "Choose a garment to start working on:"
+    "chooseGarment": "Choose a garment to start working on:",
+    "noPiecesSelected": "No patterns selected. Visit the Pattern Rack to choose patterns.",
+    "goToRack": "Go to Pattern Rack"
   },
   "measurements": {
     "title": "Measurements",
@@ -95,6 +97,11 @@
     "title": "Sewing",
     "placeholder": "Step-by-step assembly instructions",
     "underDevelopment": "Under development"
+  },
+  "patterns": {
+    "corset": "Bodice",
+    "sleeve": "Sleeve",
+    "top": "Top / Bodice Block"
   },
   "help": {
     "title": "Help",
