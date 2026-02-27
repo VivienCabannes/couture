@@ -2,7 +2,9 @@
 
 ## Context
 
-The backend (FastAPI + pattern generation) and frontend pages (Shop, Modelist, Measurements) are functional but disconnected. Each page manages its own state independently — measurements entered on the Measurements page don't flow to the Modelist, garment selections aren't tracked, and adjustments are lost on navigation.
+The data flow architecture described below has been implemented. The backend (FastAPI + pattern generation) and frontend pages (Pattern Rack, Modelist, Measurements) are connected through Zustand stores that sync state across pages and persist to the backend. Measurements flow from the Measurements page to the Modelist, garment selections are tracked across the Pattern Rack and Modelist, and state is restored on reload.
+
+The Zustand stores are **vanilla** (platform-agnostic) and live in `frontend/shared/src/stores/`. React hook wrappers for the web app are in `frontend/web/src/stores/`.
 
 ## Three Persistent Objects
 

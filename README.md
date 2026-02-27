@@ -50,7 +50,6 @@ frontend/
     hooks/          # Platform-agnostic hooks
     i18n/           # Internationalization (EN, FR, ES)
 docs/               # Project documentation
-old/                # Legacy codebase (read-only reference)
 ```
 
 ## Prerequisites

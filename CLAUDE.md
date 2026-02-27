@@ -28,12 +28,16 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
   - `shared/src/api/` — API client (used by both web and mobile, never duplicated per platform)
   - `shared/src/types/` — shared TypeScript types
   - `shared/src/i18n/` — internationalization strings
+  - `shared/src/stores/` — vanilla Zustand stores (platform-agnostic, React hook wrappers per platform)
+  - `shared/src/data/` — measurement metadata and constants
+  - `shared/src/hooks/` — shared React hooks (e.g., `usePatternForm`)
 
 ### Docs (`docs/`)
 
 - `VISION.md` — project mission and roadmap
 - `PAGES.md` — page descriptions and layouts
 - `FRONT_PAGE_DESIGN.md` — front page design spec
+- `DATA_FLOW.md` — data flow architecture (measurements, selections, modifications)
 
 ## Conventions
 

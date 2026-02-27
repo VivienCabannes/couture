@@ -48,30 +48,33 @@ This means:
 
 ## Project Roadmap
 
-### Phase 1: The Foundation (Current Focus)
+### Phase 1: The Foundation ✓
 
 **Goal:** Generate reliable base patterns to *any* size using a CLI that is easy to use.
 
-* **Core Backend:** Develop the Python architecture to define measurements, points, lines, and curves.
-* **Base Blocks:** Create standard, mathematically sound base patterns (slopers/blocks) that scale correctly to any inputted measurement.
-* **CLI Experience:** A user should be able to generate a pattern with a single command and minimal arguments. Sensible defaults, clear help text, and useful error messages — not a wall of flags or a script to edit by hand.
-* **Export:** Generate printable PDFs and projector-ready files directly from the CLI.
+* **Core Backend:** Python architecture for measurements, points, lines, and curves — done.
+* **Base Blocks:** Standard, mathematically sound base patterns (slopers/blocks) that scale correctly to any inputted measurement — done.
+* **CLI Experience:** Pattern generation via CLI with sensible defaults — done (`backend/cli/`).
+* **Export:** SVG output from the backend — done. PDF/projector export is planned.
 
-### Phase 2: Advanced Adjustments & Customization
+### Phase 2: Advanced Adjustments & Customization (Partially Complete)
 
 **Goal:** Allow for granular pattern manipulation without sacrificing CLI simplicity.
 
-* **Ease Control:** Implement variables to adjust garment ease (how tight or loose the garment is), with sensible defaults so users only specify what they want to change.
-* **Dart Manipulation:** Create functions to add, move, or split darts (e.g., rotating a shoulder dart to the side seam).
-* **Progressive Options:** Advanced parameters are available via optional flags but never required. The default command stays simple.
+* **Ease Control:** Ease adjustment via control parameters — done. Exposed in the Modelist UI as "Advanced Controls".
+* **Dart Manipulation:** Functions to add, move, or split darts — planned, not yet implemented.
+* **Progressive Options:** Advanced parameters available via optional flags — done. The default command stays simple.
 
-### Phase 3: The Front-End Experience
+### Phase 3: The Front-End Experience (In Progress)
 
 **Goal:** Apply UX principles to make the tool accessible to non-programmers.
 
-* **Web & Mobile Front-End:** Build a visual interface where users input their measurements, preview patterns instantly, and adjust settings without touching the terminal.
-* **Interactive Tweaking:** Allow users to adjust ease, dart placement, and design lines via the UI, with instant visual feedback.
-* **Export:** Generate printable PDFs and projector-ready files directly from the front-end.
+* **Web & Mobile Front-End:** React (web) and React Native (mobile) apps are functional with home, measurements, Pattern Rack, Modelist, and help pages. Designer and sewing pages are under development.
+* **Measurements:** Full measurement input with standard sizing (French T34–T48), "I don't know" algorithmic estimation, and preset profiles (Kwama, Vivien). Measurements persist across pages via Zustand stores.
+* **Pattern Rack:** Card-based browsing of pattern pieces with selection tracking via Zustand store.
+* **Modelist Corner:** Piece tabs, SVG preview with zoom/pan, size selector, stretch and advanced controls, construction/pattern view toggle.
+* **Interactive Tweaking:** Control parameters and stretch adjustments are functional. Direct Bezier point editing is planned.
+* **Export:** PDF/projector export from the front-end is planned.
 
 ### Phase 4: Expanded Pattern Library & Community
 

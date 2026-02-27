@@ -9,7 +9,7 @@ Couture is organized into six main sections, each accessible from the front page
 | Page              | Route            | Purpose                                          |
 |-------------------|------------------|--------------------------------------------------|
 | Designer Studio   | `/designer`      | Sketch garments and refine designs with AI        |
-| Pattern Shop      | `/shop`          | Browse, search, and acquire sewing patterns       |
+| Pattern Rack      | `/shop`          | Browse and select base pattern pieces             |
 | Modelist Corner   | `/modelist`      | Edit and adjust pattern geometry interactively     |
 | Measurements      | `/measurements`  | Enter body measurements and select standard sizes |
 | Sewing            | `/sewing`        | Follow step-by-step assembly instructions          |
@@ -21,67 +21,77 @@ Couture is organized into six main sections, each accessible from the front page
 
 The Designer Studio is where garment ideas take shape. It combines freehand drawing with AI-assisted generation, letting users sketch a concept and refine it through conversation.
 
+> **Status:** Under active development. The canvas drawing tools (pen, eraser, color picker) are functional, but the AI chat assistant is not yet implemented. On entry, users see an "Under Development" dialog explaining that design tools will be available soon.
+
 ### Layout
 
-Split panel (50/50 on desktop, stacked on mobile):
+Two-column flex layout (stacked on mobile):
 
-- **Left panel — Drawing Canvas:** A blank canvas for freehand sketching. A small toolbar along the top or left edge provides drawing tools: pencil (freehand), line, curve, and eraser. Users draw rough silhouettes or design details directly on the canvas.
-- **Right panel — AI Chat:** A conversational interface where users describe what they want in natural language. The AI generates or refines sketches based on text descriptions. The panel displays a chat history (user messages and AI responses with generated images) and an input bar at the bottom.
+- **Left panel — Drawing Canvas:** An 800×600 canvas (4:3 aspect ratio) for freehand sketching. A toolbar provides pen, eraser, clear, and color picker tools. Mouse and touch input are supported.
+- **Right panel — Notes:** A textarea for jotting down design ideas alongside the sketch.
 
 ### Interactions
 
-- Drawing on the canvas produces vector strokes that can be sent to the AI as context.
-- Typing a description in the chat (e.g., "A-line dress with boat neckline") triggers the AI to generate a sketch.
-- The AI can modify an existing canvas drawing based on follow-up instructions.
-- Users can save designs and send them to the Pattern Shop for pattern matching.
+- Drawing on the canvas produces freehand strokes with the selected color.
+- The eraser tool removes strokes (20px width).
+- The clear button resets the canvas.
+- AI chat integration and the ability to send designs to the Pattern Rack are planned but not yet functional.
 
 ---
 
-## Pattern Shop (`/shop`)
+## Pattern Rack (`/shop`)
 
-The Pattern Shop is a discovery and browsing page, similar in spirit to pattern marketplaces like sewist.com. Users search for patterns by keyword, filter by category or difficulty, and preview pattern details before selecting one.
+The Pattern Rack is where users browse and select base pattern pieces to work with. Pattern pieces are fetched from the API and displayed as cards in a responsive grid.
 
 ### Layout
 
 Top-down structure:
 
-- **Search bar** at the top, with filter buttons (category, difficulty level) below or beside it.
-- **Pattern grid** below the search area. Three columns on desktop, two on tablet, one on mobile. Each card in the grid contains:
-  - An image placeholder (pattern illustration or photo)
-  - Pattern name
-  - Difficulty badge (beginner / intermediate / advanced)
-  - Short description
+- **Pattern grid:** Three columns on desktop, two on tablet, one on mobile. Each card contains:
+  - An image placeholder area (pattern illustrations are planned but not yet present)
+  - Pattern name (translated via i18n, e.g., "Bodice", "Sleeve")
+  - A circular selection indicator in the top-right corner (empty circle when unselected, filled blue circle with checkmark when selected)
+- **Bottom bar:** A fixed sticky footer showing a "Go to Modelist Corner" button with a count of selected patterns. If no patterns are selected, clicking shows a brief "Select at least one pattern" warning.
 
 ### Interactions
 
-- Typing in the search bar filters the grid in real time.
-- Clicking a filter button (e.g., "Tops", "Dresses", "Beginner") narrows results.
-- The AI can suggest patterns that match a design from the Designer Studio — a banner or button links the two features.
-- Clicking a pattern card opens a detail view (future scope).
+- Clicking a card toggles its selection state (add/remove) via the Zustand selections store.
+- Selected cards display a blue ring border and the filled checkmark indicator.
+- The "Go to Modelist Corner (N)" button navigates to the Modelist with the selected pieces.
+- Search and filter functionality are not yet implemented.
 
 ---
 
 ## Modelist Corner (`/modelist`)
 
-The Modelist Corner is the technical heart of Couture. This is where pattern pieces are displayed, inspected, and modified. It is designed for users who want precise control over pattern geometry — adjusting curves, moving points, and fine-tuning fit.
+The Modelist Corner is the technical heart of Couture. This is where pattern pieces are displayed, inspected, and modified. It is designed for users who want precise control over pattern geometry.
+
+### Entry
+
+When no garments are selected, the page shows an empty state with a link to the Pattern Rack. Once pieces are selected (via the Pattern Rack), the full editing interface loads.
 
 ### Layout
 
-Split panel (60/40 on desktop, stacked on mobile):
+Two-column flex layout (3:2 ratio on desktop, stacked on mobile):
 
-- **Left panel — Pattern Viewport:** A large SVG viewport displaying the current pattern piece(s). Users can zoom and pan. The pattern is rendered as editable geometry: Bezier control points are visible and draggable.
-- **Right panel — Modification Controls:** A vertical stack of collapsible sections:
-  - **Adjustments:** Numeric inputs for ease, seam allowance, and key dimensions.
-  - **Dart Controls:** Options to add, move, rotate, or split darts.
-  - **AI Assistant:** A text input where users type natural-language commands (e.g., "add 2cm ease at the hip") and the AI applies the corresponding geometric transformation.
+- **Left panel — Pattern Preview:** A large SVG viewport displaying the generated pattern piece. Supports zoom (0.5× to 10×, mouse wheel or +/− buttons) and pan (pointer drag when zoomed in). A percentage indicator in the bottom-right shows current zoom level and resets on click. The SVG is rendered from backend-generated markup. Users can toggle between **Construction view** (showing construction lines) and **Pattern view** (final pattern only).
+- **Right panel — Piece Controls:** Collapsible accordion sections using `<details>` elements:
+  - **Size selector:** Dropdown with French sizes T34–T48. Selecting a size applies standard measurements.
+  - **Stretch:** (Conditional — only shown for pieces that support stretch.) Horizontal and vertical stretch percentage inputs.
+  - **Advanced Controls:** (Conditional — only shown when the pattern type exposes control parameters.) Dynamic list of named parameters with numeric inputs.
+  - **Generate button:** Triggers pattern generation with current settings. Shows loading state during generation.
+
+### Piece Tabs
+
+A horizontal tab bar at the top lets users switch between selected pattern pieces (e.g., Bodice, Sleeve). The active tab is visually highlighted with a white background and shadow.
 
 ### Interactions
 
-- Dragging a Bezier control point on the SVG updates the curve in real time.
-- Moving a pattern point adjusts related measurements and redraws connected curves.
-- Changing a numeric input in the right panel updates the SVG immediately.
-- AI text commands are parsed and applied as geometric operations on the pattern.
-- Zoom +/- buttons control the viewport scale.
+- Selecting a size pre-fills measurements from the standard sizing table.
+- Adjusting control parameters and clicking "Generate" produces an updated SVG preview.
+- Zoom via mouse wheel (15% per tick) or the +/− overlay buttons.
+- Pan by pointer drag when zoomed in beyond 1×.
+- Direct Bezier point editing, dart controls, and AI assistant are planned but not yet implemented.
 
 ---
 
@@ -95,8 +105,9 @@ Split panel (45/55 on desktop, stacked on mobile):
 
 - **Left panel — Body Silhouette:** An inline SVG showing a front-view body outline with horizontal measurement lines at key positions (bust, waist, hip, etc.). Each line corresponds to a measurement field on the right. When a user focuses an input field, the corresponding line on the silhouette highlights, showing where on the body that measurement is taken.
 - **Right panel — Measurement Inputs:**
-  - **Size selector:** Country dropdown (France, US, UK) and size dropdown (T34 through T48 in French sizing). Selecting a size pre-fills all measurement fields with standard values.
-  - **Measurement fields:** A two-column grid of labeled inputs, one for each of the 24 body measurements defined in the system. Each field has an "I don't know" checkbox — when checked, the system calculates that measurement algorithmically from the user's other (known) measurements.
+  - **Preset selector:** A dropdown to apply pre-defined measurement profiles. Available presets: Kwama and Vivien (real body measurement sets). Selecting a preset fills all 24 fields with that person's measurements. Selecting "Standard size" reverts to size-table-based values.
+  - **Size selector:** Country dropdown (France, US, UK) and size dropdown (T34 through T48 in French sizing). Selecting a size pre-fills all measurement fields with standard values. Note: only French sizing is currently functional.
+  - **Measurement fields:** A two-column grid of labeled inputs, one for each of the 24 body measurements defined in the system. Fields are organized into 5 sections: Lengths, Circumferences, Widths, Arm, and Lower Body. Each field has an "I don't know" checkbox — when checked, the system calculates that measurement algorithmically from the user's other (known) measurements.
 
 ### The 24 Measurements
 
@@ -130,9 +141,11 @@ These correspond to the `FullMeasurements` dataclass in the backend:
 ### Interactions
 
 - Focusing a measurement input highlights the corresponding line on the body silhouette SVG.
+- Selecting a preset (Kwama or Vivien) populates all fields with that person's measurements.
 - Selecting a standard size populates all fields with default values from the sizing table (French T34–T48).
 - Checking "I don't know" on a field disables the input and marks it for algorithmic estimation.
 - All values are in centimeters.
+- Measurements are persisted to the backend via the Zustand measurements store and are available across all pages (e.g., pre-loaded in the Modelist).
 
 ---
 

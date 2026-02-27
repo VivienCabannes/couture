@@ -9,7 +9,7 @@ The front page is the app's entry point and primary navigation hub. Rather than 
 | English           | French               | Spanish                 | Route            | Description                                        |
 |-------------------|----------------------|-------------------------|------------------|----------------------------------------------------|
 | Designer Studio   | Atelier Création     | Estudio de Diseño       | `/designer`      | Conceptualize garments, draw silhouettes            |
-| Pattern Shop      | Boutique des Patrons | Tienda de Patrones      | `/shop`          | Browse and acquire pre-made patterns                |
+| Pattern Rack      | Vestiaire des Patrons | Perchero de Patrones   | `/shop`          | Browse and select base pattern pieces               |
 | Modelist Corner   | Atelier Modélisme    | Rincón del Modelista    | `/modelist`      | Draft, alter, and grade patterns from measurements  |
 | Measurements      | Mesures              | Medidas                 | `/measurements`  | Enter and manage body measurements                  |
 | Sewing            | Assemblage           | Costura                 | `/sewing`        | Assembly instructions and construction guides       |
@@ -99,4 +99,4 @@ Implementation: a CSS class on `<body>` (`dark`) activates dark-mode color overr
 
 ## Reference
 
-A standalone interactive prototype is available at [`proto/index.html`](../proto/index.html). Open it directly in a browser to see the responsive card grid, language toggle, and dark mode in action.
+The front page is implemented in `frontend/web/src/features/home/` and `frontend/mobile/src/features/home/`. The responsive card grid, language toggle, and dark mode are functional in both web and mobile apps.
