@@ -12,11 +12,11 @@
     "measurements": "Measurements",
     "sewing": "Sewing",
     "help": "Help",
-    "designerStudioDesc": "Sketch & design garments",
+    "designerStudioDesc": "Design garments",
     "patternRackDesc": "Browse base patterns",
-    "modelistCornerDesc": "Precision pattern editing",
+    "modelistCornerDesc": "Refine patterns",
     "measurementsDesc": "Body measurements & sizing",
-    "sewingDesc": "Assembly instructions",
+    "sewingDesc": "Cutting & assembly instructions",
     "helpDesc": "Guides, glossary & FAQ"
   },
   "designer": {

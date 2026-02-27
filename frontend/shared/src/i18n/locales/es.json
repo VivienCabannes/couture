@@ -12,11 +12,11 @@
     "measurements": "Medidas",
     "sewing": "Costura",
     "help": "Ayuda",
-    "designerStudioDesc": "Bocete y diseñe prendas",
+    "designerStudioDesc": "Diseñe prendas",
     "patternRackDesc": "Explore patrones base",
-    "modelistCornerDesc": "Edición precisa de patrones",
+    "modelistCornerDesc": "Refine patrones",
     "measurementsDesc": "Medidas corporales y tallaje",
-    "sewingDesc": "Instrucciones de ensamblaje",
+    "sewingDesc": "Instrucciones de corte y ensamblaje",
     "helpDesc": "Guías, glosario y FAQ"
   },
   "designer": {
