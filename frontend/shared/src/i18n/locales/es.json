@@ -1,8 +1,7 @@
 {
   "common": {
     "backHome": "\u2190 Inicio",
-    "langToggle": "EN",
-    "send": "Enviar"
+    "langToggle": "EN"
   },
   "home": {
     "welcome": "Bienvenido",
@@ -12,59 +11,43 @@
     "measurements": "Medidas",
     "sewing": "Costura",
     "help": "Ayuda",
-    "designerStudioDesc": "Diseñe prendas",
+    "designerStudioDesc": "Dise\u00f1e prendas",
     "patternRackDesc": "Explore patrones base",
     "modelistCornerDesc": "Refine patrones",
     "measurementsDesc": "Medidas corporales y tallaje",
     "sewingDesc": "Instrucciones de corte y ensamblaje",
-    "helpDesc": "Guías, glosario y FAQ"
+    "helpDesc": "Gu\u00edas, glosario y FAQ"
   },
   "designer": {
     "title": "Estudio de Dise\u00f1o",
     "drawingCanvas": "Lienzo de dibujo",
-    "chatPlaceholder": "Describa su dise\u00f1o\u2026",
-    "chatBubble1": "Vestido evas\u00e9 con escote barco",
-    "chatBubble2": "Aqu\u00ed tienes un boceto basado en tu descripci\u00f3n. La silueta evas\u00e9 se abre suavemente desde el busto. \u00bfTe gustar\u00eda ajustar el largo del dobladillo?",
-    "chatBubble3": "Hazlo hasta la rodilla y a\u00f1ade mangas cortas"
+    "notes": "Notas",
+    "notesPlaceholder": "Anote ideas de dise\u00f1o, opciones de tela o notas de construcci\u00f3n\u2026",
+    "pen": "L\u00e1piz",
+    "eraser": "Borrador",
+    "clear": "Limpiar"
   },
   "shop": {
     "title": "Perchero de Patrones",
-    "searchPlaceholder": "Buscar patrones\u2026",
-    "filterAll": "Todos",
-    "filterTops": "Blusas",
-    "filterDresses": "Vestidos",
-    "filterSkirts": "Faldas",
     "patternIllustration": "Ilustraci\u00f3n del patr\u00f3n",
-    "classicBodice": "Bloque de corpi\u00f1o cl\u00e1sico",
-    "classicBodiceDesc": "Patr\u00f3n base de corpi\u00f1o ajustado con pinzas delanteras y traseras",
-    "aLineSkirt": "Falda evas\u00e9",
-    "aLineSkirtDesc": "Falda evas\u00e9 simple con cinturilla y cremallera",
-    "setInSleeve": "Manga pegada",
-    "setInSleeveDesc": "Manga est\u00e1ndar de una pieza para bloques de corpi\u00f1o",
-    "shiftDress": "Vestido recto",
-    "shiftDressDesc": "Vestido recto holgado con escote con vista",
-    "princessSeam": "Corpi\u00f1o con costura princesa",
-    "princessSeamDesc": "Corpi\u00f1o con costuras princesa que reemplazan las pinzas",
-    "corset": "Cors\u00e9",
-    "corsetDesc": "Cors\u00e9 estructurado con canales de ballenas y cordones",
-    "beginner": "Principiante",
-    "intermediate": "Intermedio",
-    "advanced": "Avanzado"
+    "loading": "Cargando prendas\u2026",
+    "error": "Error al cargar las prendas",
+    "pieces": "{{count}} piezas"
   },
   "modelist": {
     "title": "Rinc\u00f3n del Modelista",
-    "frontBodice": "Delantero corpi\u00f1o",
     "adjustments": "Ajustes",
     "ease": "Holgura (cm)",
     "seamAllowance": "Margen de costura (cm)",
     "hemAllowance": "Dobladillo (cm)",
-    "dartControls": "Control de pinzas",
-    "dartAngle": "\u00c1ngulo de pinza (\u00b0)",
-    "dartLength": "Largo de pinza (cm)",
-    "aiAssistant": "Asistente IA",
-    "aiDescription": "Describa una modificaci\u00f3n en lenguaje natural.",
-    "aiPlaceholder": "ej. A\u00f1adir 2cm de holgura en la cadera",
-    "apply": "Aplicar"
+    "generate": "Generar",
+    "generating": "Generando\u2026",
+    "construction": "Construcci\u00f3n",
+    "pattern": "Patr\u00f3n",
+    "size": "Talla",
+    "stretch": "Elasticidad",
+    "advancedControls": "Controles avanzados",
+    "noPreview": "Genere un patr\u00f3n para ver la vista previa"
   },
   "measurements": {
     "title": "Medidas",

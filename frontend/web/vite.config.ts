@@ -9,5 +9,6 @@ export default defineConfig({
     alias: {
       "@shared": fileURLToPath(new URL("../shared/src", import.meta.url)),
     },
+    dedupe: ["react", "react-dom"],
   },
 });

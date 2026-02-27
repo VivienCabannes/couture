@@ -18,7 +18,7 @@ export type RootStackParamList = {
   Home: undefined;
   Designer: undefined;
   Shop: undefined;
-  Modelist: undefined;
+  Modelist: { garmentType: string };
   Measurements: undefined;
   Sewing: undefined;
   Help: undefined;

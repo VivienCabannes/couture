@@ -1,8 +1,7 @@
 {
   "common": {
     "backHome": "\u2190 Home",
-    "langToggle": "FR",
-    "send": "Send"
+    "langToggle": "FR"
   },
   "home": {
     "welcome": "Welcome",
@@ -22,49 +21,33 @@
   "designer": {
     "title": "Designer Studio",
     "drawingCanvas": "Drawing Canvas",
-    "chatPlaceholder": "Describe your design\u2026",
-    "chatBubble1": "A-line dress with a boat neckline",
-    "chatBubble2": "Here\u2019s a sketch based on your description. The A-line silhouette flares gently from the bust. Would you like to adjust the hem length?",
-    "chatBubble3": "Make it knee-length and add cap sleeves"
+    "notes": "Notes",
+    "notesPlaceholder": "Jot down design ideas, fabric choices, or construction notes\u2026",
+    "pen": "Pen",
+    "eraser": "Eraser",
+    "clear": "Clear"
   },
   "shop": {
     "title": "Pattern Rack",
-    "searchPlaceholder": "Search patterns\u2026",
-    "filterAll": "All",
-    "filterTops": "Tops",
-    "filterDresses": "Dresses",
-    "filterSkirts": "Skirts",
     "patternIllustration": "Pattern illustration",
-    "classicBodice": "Classic Bodice Block",
-    "classicBodiceDesc": "Fitted bodice sloper with front and back darts",
-    "aLineSkirt": "A-Line Skirt",
-    "aLineSkirtDesc": "Simple flared skirt with waistband and zipper",
-    "setInSleeve": "Set-In Sleeve",
-    "setInSleeveDesc": "Standard one-piece sleeve for bodice blocks",
-    "shiftDress": "Shift Dress",
-    "shiftDressDesc": "Loose-fitting straight dress with facing neckline",
-    "princessSeam": "Princess Seam Bodice",
-    "princessSeamDesc": "Bodice with vertical princess seams replacing darts",
-    "corset": "Corset",
-    "corsetDesc": "Structured corset with boning channels and lacing",
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced"
+    "loading": "Loading garments\u2026",
+    "error": "Failed to load garments",
+    "pieces": "{{count}} pieces"
   },
   "modelist": {
     "title": "Modelist Corner",
-    "frontBodice": "Front Bodice",
     "adjustments": "Adjustments",
     "ease": "Ease (cm)",
     "seamAllowance": "Seam allowance (cm)",
     "hemAllowance": "Hem allowance (cm)",
-    "dartControls": "Dart Controls",
-    "dartAngle": "Dart angle (\u00b0)",
-    "dartLength": "Dart length (cm)",
-    "aiAssistant": "AI Assistant",
-    "aiDescription": "Describe a modification in natural language.",
-    "aiPlaceholder": "e.g. Add 2cm ease at hip",
-    "apply": "Apply"
+    "generate": "Generate",
+    "generating": "Generating\u2026",
+    "construction": "Construction",
+    "pattern": "Pattern",
+    "size": "Size",
+    "stretch": "Stretch",
+    "advancedControls": "Advanced Controls",
+    "noPreview": "Generate a pattern to see the preview"
   },
   "measurements": {
     "title": "Measurements",

@@ -1,30 +1,23 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
-import type { PatternDef } from "./patternData";
+import type { GarmentInfo } from "@shared/types/patterns";
 
 interface Props {
-  pattern: PatternDef;
+  garment: GarmentInfo;
+  onPress: () => void;
 }
 
-/** Renders a single pattern card matching the web's design: gray image area + badge. */
-export function PatternCard({ pattern }: Props) {
+export function PatternCard({ garment, onPress }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
-  const badgeColors = {
-    beginner: { bg: colors.badgeBeginner, text: colors.badgeBeginnerText },
-    intermediate: {
-      bg: colors.badgeIntermediate,
-      text: colors.badgeIntermediateText,
-    },
-    advanced: { bg: colors.badgeAdvanced, text: colors.badgeAdvancedText },
-  };
-  const badge = badgeColors[pattern.difficulty];
-
   return (
-    <View style={[styles.card, { backgroundColor: colors.card }]}>
-      {/* Gray placeholder image area — matches web's 180px gray block */}
+    <TouchableOpacity
+      onPress={onPress}
+      style={[styles.card, { backgroundColor: colors.card }]}
+      activeOpacity={0.7}
+    >
       <View
         style={[
           styles.illustration,
@@ -38,18 +31,13 @@ export function PatternCard({ pattern }: Props) {
 
       <View style={styles.content}>
         <Text style={[styles.name, { color: colors.text }]}>
-          {t(pattern.nameKey)}
+          {garment.label}
         </Text>
         <Text style={[styles.desc, { color: colors.textSecondary }]}>
-          {t(pattern.descKey)}
+          {t("shop.pieces", { count: garment.pieces.length })}
         </Text>
-        <View style={[styles.badge, { backgroundColor: badge.bg }]}>
-          <Text style={[styles.badgeText, { color: badge.text }]}>
-            {t(pattern.difficultyKey)}
-          </Text>
-        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -80,16 +68,5 @@ const styles = StyleSheet.create({
   desc: {
     fontSize: 13,
     lineHeight: 18,
-    marginBottom: 8,
-  },
-  badge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  badgeText: {
-    fontSize: 12,
-    fontWeight: "600",
   },
 });

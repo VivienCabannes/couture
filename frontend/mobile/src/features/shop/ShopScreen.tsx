@@ -1,77 +1,58 @@
-import { useState } from "react";
-import { View, TextInput, TouchableOpacity, Text, FlatList, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, FlatList, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "../../hooks/useTheme";
 import { ScreenWrapper, PageHeading } from "../../components";
 import { PatternCard } from "./PatternCard";
-import { PATTERNS } from "./patternData";
-
-const FILTERS = ["filterAll", "filterTops", "filterDresses", "filterSkirts"];
+import { fetchGarments } from "@shared/api";
+import type { GarmentInfo } from "@shared/types/patterns";
+import type { RootStackParamList } from "../../../App";
 
 export function ShopScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const [activeFilter, setActiveFilter] = useState("filterAll");
-  const [search, setSearch] = useState("");
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [garments, setGarments] = useState<GarmentInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filtered = PATTERNS.filter((p) =>
-    t(p.nameKey).toLowerCase().includes(search.toLowerCase()),
-  );
+  useEffect(() => {
+    fetchGarments()
+      .then(setGarments)
+      .catch(() => setError(t("shop.error")))
+      .finally(() => setLoading(false));
+  }, [t]);
 
   return (
     <ScreenWrapper scrollable={false}>
       <View style={styles.header}>
         <PageHeading>{t("shop.title")}</PageHeading>
-
-        <TextInput
-          placeholder={t("shop.searchPlaceholder")}
-          placeholderTextColor={colors.textTertiary}
-          value={search}
-          onChangeText={setSearch}
-          style={[
-            styles.searchInput,
-            {
-              borderColor: colors.border,
-              color: colors.text,
-            },
-          ]}
-        />
-
-        <View style={styles.filters}>
-          {FILTERS.map((key) => {
-            const isActive = activeFilter === key;
-            return (
-              <TouchableOpacity
-                key={key}
-                onPress={() => setActiveFilter(key)}
-                style={[
-                  styles.filterChip,
-                  isActive
-                    ? { backgroundColor: colors.primary, borderColor: colors.primary }
-                    : { backgroundColor: colors.card, borderColor: colors.border },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.filterText,
-                    { color: isActive ? "#fff" : colors.text },
-                  ]}
-                >
-                  {t(`shop.${key}`)}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
       </View>
 
-      <FlatList
-        data={filtered}
-        keyExtractor={(item) => item.nameKey}
-        renderItem={({ item }) => <PatternCard pattern={item} />}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      {loading && (
+        <Text style={[styles.message, { color: colors.textSecondary }]}>
+          {t("shop.loading")}
+        </Text>
+      )}
+
+      {error && <Text style={[styles.message, { color: "red" }]}>{error}</Text>}
+
+      {!loading && !error && (
+        <FlatList
+          data={garments}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item }) => (
+            <PatternCard
+              garment={item}
+              onPress={() => navigation.navigate("Modelist", { garmentType: item.name })}
+            />
+          )}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </ScreenWrapper>
   );
 }
@@ -81,29 +62,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 16,
   },
-  searchInput: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
+  message: {
+    textAlign: "center",
+    paddingVertical: 48,
     fontSize: 14,
-    marginBottom: 12,
-  },
-  filters: {
-    flexDirection: "row",
-    gap: 8,
-    marginBottom: 16,
-    flexWrap: "wrap",
-  },
-  filterChip: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  filterText: {
-    fontSize: 13,
-    fontWeight: "600",
   },
   list: {
     paddingHorizontal: 24,

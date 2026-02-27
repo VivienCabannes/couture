@@ -1,8 +1,7 @@
 {
   "common": {
     "backHome": "\u2190 Accueil",
-    "langToggle": "ES",
-    "send": "Envoyer"
+    "langToggle": "ES"
   },
   "home": {
     "welcome": "Bienvenue",
@@ -13,7 +12,7 @@
     "sewing": "Assemblage",
     "help": "Aide",
     "designerStudioDesc": "Dessin d'une silhouette",
-    "patternRackDesc": "Sélection des patrons",
+    "patternRackDesc": "S\u00e9lection des patrons",
     "modelistCornerDesc": "Retouche des patrons",
     "measurementsDesc": "Mensurations et tailles",
     "sewingDesc": "Instructions de coupe et montage",
@@ -22,49 +21,33 @@
   "designer": {
     "title": "Atelier Cr\u00e9ation",
     "drawingCanvas": "Canevas de dessin",
-    "chatPlaceholder": "D\u00e9crivez votre design\u2026",
-    "chatBubble1": "Robe trap\u00e8ze avec encolure bateau",
-    "chatBubble2": "Voici un croquis bas\u00e9 sur votre description. La silhouette trap\u00e8ze s'\u00e9vase doucement depuis le buste. Souhaitez-vous ajuster la longueur de l'ourlet ?",
-    "chatBubble3": "Longueur genou avec des manches courtes"
+    "notes": "Notes",
+    "notesPlaceholder": "Notez vos id\u00e9es de design, choix de tissus ou notes de construction\u2026",
+    "pen": "Crayon",
+    "eraser": "Gomme",
+    "clear": "Effacer"
   },
   "shop": {
     "title": "Vestiaire des Patrons",
-    "searchPlaceholder": "Rechercher des patrons\u2026",
-    "filterAll": "Tous",
-    "filterTops": "Hauts",
-    "filterDresses": "Robes",
-    "filterSkirts": "Jupes",
     "patternIllustration": "Illustration du patron",
-    "classicBodice": "Buste de base classique",
-    "classicBodiceDesc": "Base de buste ajust\u00e9e avec pinces devant et dos",
-    "aLineSkirt": "Jupe trap\u00e8ze",
-    "aLineSkirtDesc": "Jupe \u00e9vas\u00e9e simple avec ceinture et fermeture",
-    "setInSleeve": "Manche mont\u00e9e",
-    "setInSleeveDesc": "Manche classique une pi\u00e8ce pour buste de base",
-    "shiftDress": "Robe droite",
-    "shiftDressDesc": "Robe droite ample avec encolure en parementure",
-    "princessSeam": "Buste d\u00e9coupe princesse",
-    "princessSeamDesc": "Buste avec d\u00e9coupes princesse rempla\u00e7ant les pinces",
-    "corset": "Corset",
-    "corsetDesc": "Corset structur\u00e9 avec coulisses de baleines et la\u00e7age",
-    "beginner": "D\u00e9butant",
-    "intermediate": "Interm\u00e9diaire",
-    "advanced": "Avanc\u00e9"
+    "loading": "Chargement des v\u00eatements\u2026",
+    "error": "\u00c9chec du chargement des v\u00eatements",
+    "pieces": "{{count}} pi\u00e8ces"
   },
   "modelist": {
     "title": "Atelier Mod\u00e9lisme",
-    "frontBodice": "Devant buste",
     "adjustments": "Ajustements",
     "ease": "Aisance (cm)",
     "seamAllowance": "Marge de couture (cm)",
     "hemAllowance": "Ourlet (cm)",
-    "dartControls": "Contr\u00f4le des pinces",
-    "dartAngle": "Angle de pince (\u00b0)",
-    "dartLength": "Longueur de pince (cm)",
-    "aiAssistant": "Assistant IA",
-    "aiDescription": "D\u00e9crivez une modification en langage naturel.",
-    "aiPlaceholder": "ex. Ajouter 2cm d'aisance \u00e0 la hanche",
-    "apply": "Appliquer"
+    "generate": "G\u00e9n\u00e9rer",
+    "generating": "G\u00e9n\u00e9ration\u2026",
+    "construction": "Construction",
+    "pattern": "Patron",
+    "size": "Taille",
+    "stretch": "\u00c9lasticit\u00e9",
+    "advancedControls": "Contr\u00f4les avanc\u00e9s",
+    "noPreview": "G\u00e9n\u00e9rez un patron pour voir l'aper\u00e7u"
   },
   "measurements": {
     "title": "Mesures",

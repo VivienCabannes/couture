@@ -1,47 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { PatternCard } from "./PatternCard";
-import { PATTERNS } from "./patternData";
-
-const FILTERS = ["filterAll", "filterTops", "filterDresses", "filterSkirts"];
+import { fetchGarments } from "@shared/api";
+import type { GarmentInfo } from "@shared/types/patterns";
 
 export function ShopPage() {
   const { t } = useTranslation();
-  const [activeFilter, setActiveFilter] = useState("filterAll");
+  const navigate = useNavigate();
+  const [garments, setGarments] = useState<GarmentInfo[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchGarments()
+      .then(setGarments)
+      .catch(() => setError(t("shop.error")))
+      .finally(() => setLoading(false));
+  }, [t]);
 
   return (
     <>
       <BackLink />
       <PageHeading>{t("shop.title")}</PageHeading>
 
-      <div className="mb-5 flex flex-wrap gap-3">
-        <input
-          type="text"
-          placeholder={t("shop.searchPlaceholder")}
-          className="min-w-[200px] flex-1 rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 font-sans text-sm outline-none transition-colors focus:border-blue-600 dark:border-gray-600 dark:text-gray-50 dark:focus:border-blue-400"
-        />
-        {FILTERS.map((key) => (
-          <button
-            key={key}
-            onClick={() => setActiveFilter(key)}
-            className={`cursor-pointer rounded-lg border px-4 py-2 font-sans text-[0.8125rem] font-semibold transition-colors ${
-              activeFilter === key
-                ? "border-blue-600 bg-blue-600 text-white"
-                : "border-gray-300 bg-white text-gray-700 hover:border-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-700"
-            }`}
-          >
-            {t(`shop.${key}`)}
-          </button>
-        ))}
-      </div>
+      {loading && (
+        <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
+          {t("shop.loading")}
+        </p>
+      )}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {PATTERNS.map((p) => (
-          <PatternCard key={p.nameKey} pattern={p} />
-        ))}
-      </div>
+      {error && (
+        <p className="py-12 text-center text-sm text-red-500">{error}</p>
+      )}
+
+      {!loading && !error && (
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {garments.map((g) => (
+            <PatternCard
+              key={g.name}
+              garment={g}
+              onClick={() => navigate(`/modelist/${g.name}`)}
+            />
+          ))}
+        </div>
+      )}
     </>
   );
 }
