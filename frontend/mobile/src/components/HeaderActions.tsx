@@ -59,6 +59,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     gap: 8,
+    marginRight: 8,
   },
   button: {
     flexDirection: "row",
