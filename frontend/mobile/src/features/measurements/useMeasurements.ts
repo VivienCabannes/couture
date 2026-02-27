@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { SIZE_TABLE } from "@shared/types";
 import type { MeasurementField, FullMeasurements } from "@shared/types";
+import { fetchPresetMeasurements } from "@shared/api/measurements";
 
 /** The 24 fields grouped by section for display order. */
 export const MEASUREMENT_SECTIONS = [
@@ -121,6 +122,7 @@ export function useMeasurements() {
   const [idk, setIdk] = useState<Record<string, boolean>>({});
   const [activeField, setActiveField] = useState<MeasurementField | null>(null);
   const [size, setSize] = useState(38);
+  const [preset, setPreset] = useState<string | null>(null);
 
   const updateField = useCallback(
     (field: MeasurementField, value: number) => {
@@ -135,6 +137,7 @@ export function useMeasurements() {
 
   const applySize = useCallback((newSize: number) => {
     setSize(newSize);
+    setPreset(null);
     const diff = (newSize - 38) / 2;
     setValues((prev) => {
       const next = { ...prev };
@@ -146,14 +149,23 @@ export function useMeasurements() {
     });
   }, []);
 
+  const applyPreset = useCallback(async (person: string) => {
+    const data = await fetchPresetMeasurements(person);
+    setPreset(person);
+    setValues(data as unknown as FullMeasurements);
+    setIdk({});
+  }, []);
+
   return {
     values,
     idk,
     activeField,
     size,
+    preset,
     updateField,
     toggleIdk,
     setActiveField,
     applySize,
+    applyPreset,
   };
 }

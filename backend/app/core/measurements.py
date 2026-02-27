@@ -7,6 +7,7 @@ sizing standards (T36-T44), with T38 as the base size.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import StrEnum, auto
 from typing import ClassVar
 
 
@@ -106,5 +107,88 @@ def default_measurements(size: int = 38) -> FullMeasurements:
         name: base + (incr * size_diff)
         for name, (base, incr) in table.items()
     }
+
+    return FullMeasurements(**measurements)
+
+
+class Person(StrEnum):
+    """Known individuals with saved body measurements."""
+    Kwama = auto()
+    Vivien = auto()
+
+
+def individual_measurements(person: Person | str) -> FullMeasurements:
+    """Return FullMeasurements for a specific individual.
+
+    Args:
+        person: A Person enum value or a string matching a person's name.
+
+    Returns:
+        FullMeasurements populated with that individual's body measurements.
+
+    Raises:
+        ValueError: If the person string doesn't match any known individual.
+        NotImplementedError: If a Person enum value has no measurement data.
+    """
+    if not isinstance(person, Person):
+        person = Person(person.lower())
+
+    match person:
+        case Person.Vivien:
+            measurements = {
+                "back_waist_length":        43.5,
+                "front_waist_length":       39.5,
+                "full_bust":                102.0,
+                "bust_height":              22.0,
+                "half_bust_point_distance": 11.0,
+                "full_waist":               83.0,
+                "small_hip":                94.0,
+                "full_hip":                 101.0,
+                "neck_circumference":       40.0,
+                "half_back_width":          19.5,
+                "half_front_width":         18.5,
+                "shoulder_length":          13.0,
+                "armhole_circumference":    50.0,
+                "underarm_height":          22.5,
+                "arm_length":               66.0,
+                "upper_arm":                33.0,
+                "elbow_height":             40.0,
+                "wrist":                    17.5,
+                "waist_to_hip":             25.0,
+                "crotch_depth":             32.0,
+                "crotch_length":            85.0,
+                "waist_to_knee":            67.0,
+                "waist_to_floor":           126.0,
+                "side_waist_to_floor":      127.0,
+            }
+        case Person.Kwama:
+            measurements = {
+                "back_waist_length":        40.5,
+                "front_waist_length":       36.5,
+                "full_bust":                90.0,
+                "bust_height":              22.0,
+                "half_bust_point_distance": 9.5,
+                "full_waist":               73.0,
+                "small_hip":                80.5,
+                "full_hip":                 100.0,
+                "neck_circumference":       36.0,
+                "half_back_width":          17.5,
+                "half_front_width":         16.5,
+                "shoulder_length":          12.0,
+                "armhole_circumference":    40.0,
+                "underarm_height":          22.0,
+                "arm_length":               60.0,
+                "upper_arm":                28.0,
+                "elbow_height":             33.0,
+                "wrist":                    15.0,
+                "waist_to_hip":             22.0,
+                "crotch_depth":             26.5,
+                "crotch_length":            62.0,
+                "waist_to_knee":            58.0,
+                "waist_to_floor":           105.0,
+                "side_waist_to_floor":      106.0,
+            }
+        case _:
+            raise NotImplementedError("Unknown Person")
 
     return FullMeasurements(**measurements)

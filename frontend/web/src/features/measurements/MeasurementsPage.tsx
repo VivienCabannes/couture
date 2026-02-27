@@ -21,7 +21,7 @@ const SIZES = [
 
 export function MeasurementsPage() {
   const { t } = useTranslation();
-  const { values, idk, size, updateField, toggleIdk, applySize, fetch, loaded } =
+  const { values, idk, size, preset, updateField, toggleIdk, applySize, applyPreset, fetch, loaded } =
     useMeasurementsStore();
   const [activeField, setActiveField] = useState<MeasurementField | null>(null);
 
@@ -63,6 +63,23 @@ export function MeasurementsPage() {
                   {s.label}
                 </option>
               ))}
+            </select>
+            <select
+              aria-label={t("measurements.preset")}
+              value={preset ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v) {
+                  applyPreset(v);
+                } else {
+                  applySize(size);
+                }
+              }}
+              className="cursor-pointer rounded-lg border border-gray-300 bg-white px-3 py-2 font-sans text-sm text-gray-900 outline-none transition-colors focus:border-blue-600 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-50 dark:focus:border-blue-400"
+            >
+              <option value="">{t("measurements.presetNone")}</option>
+              <option value="kwama">{t("measurements.presetKwama")}</option>
+              <option value="vivien">{t("measurements.presetVivien")}</option>
             </select>
           </div>
 

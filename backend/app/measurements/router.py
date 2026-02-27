@@ -5,7 +5,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.core.measurements import default_measurements
+from app.core.measurements import Person, default_measurements, individual_measurements
 from app.core.models import SavedMeasurements
 from app.schemas.measurements import (
     MeasurementsResponse,
@@ -17,6 +17,7 @@ from database import get_db
 router = APIRouter(prefix="/api/measurements", tags=["measurements"])
 
 AVAILABLE_SIZES = [34, 36, 38, 40, 42, 44, 46, 48]
+AVAILABLE_PRESETS = [p.value for p in Person]
 
 
 @router.get("/sizes", response_model=list[int])
@@ -31,6 +32,25 @@ def get_default_measurements(size: int):
     if size not in AVAILABLE_SIZES:
         raise HTTPException(status_code=404, detail=f"Size {size} not available. Choose from {AVAILABLE_SIZES}")
     fm = default_measurements(size)
+    return MeasurementsResponse(**asdict(fm))
+
+
+@router.get("/presets", response_model=list[str])
+def list_presets():
+    """List available individual measurement presets."""
+    return AVAILABLE_PRESETS
+
+
+@router.get("/presets/{person}", response_model=MeasurementsResponse)
+def get_preset_measurements(person: str):
+    """Get measurements for a specific individual preset."""
+    try:
+        fm = individual_measurements(person)
+    except (ValueError, NotImplementedError):
+        raise HTTPException(
+            status_code=404,
+            detail=f"Preset '{person}' not found. Choose from {AVAILABLE_PRESETS}",
+        )
     return MeasurementsResponse(**asdict(fm))
 
 

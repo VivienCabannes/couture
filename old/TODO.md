@@ -10,6 +10,8 @@ Clean the website and make a big doc with everything.
 Evaluate Zustand solution.
 Clean the back-end.
 
+Modelist corner is broken on the website
+
 Persistence of measurements, pattern selected and the modifications to the patterns.
 
 Clean the measurements webpage and connected to the back-end.

@@ -9,6 +9,16 @@ export function fetchDefaultMeasurements(size: number): Promise<MeasurementsResp
   return apiFetch<MeasurementsResponse>(`/api/measurements/defaults/${size}`);
 }
 
+/** List available individual measurement presets (e.g. ["kwama", "vivien"]). */
+export function fetchPresets(): Promise<string[]> {
+  return apiFetch<string[]>("/api/measurements/presets");
+}
+
+/** Fetch all measurements for a specific individual preset. */
+export function fetchPresetMeasurements(person: string): Promise<MeasurementsResponse> {
+  return apiFetch<MeasurementsResponse>(`/api/measurements/presets/${person}`);
+}
+
 export interface SavedMeasurementsData {
   size: number;
   values: Record<string, number>;

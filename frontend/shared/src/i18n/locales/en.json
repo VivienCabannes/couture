@@ -26,6 +26,7 @@
     "pen": "Pen",
     "eraser": "Eraser",
     "clear": "Clear",
+    "color": "Color",
     "underDevelopment": "Under development",
     "underDevelopmentMessage": "The Designer Studio is under development. Drawing and design tools will be available soon."
   },
@@ -37,7 +38,9 @@
     "pieces": "{{count}} pieces",
     "add": "Add",
     "remove": "Remove",
-    "selected": "Selected"
+    "selected": "Selected",
+    "goToModelist": "Go to Modelist Corner",
+    "selectFirst": "Select at least one pattern"
   },
   "modelist": {
     "title": "Modelist Corner",
@@ -91,7 +94,11 @@
     "sideWaistToFloor": "24. Side Waist to Floor",
     "france": "France",
     "unitedStates": "United States",
-    "unitedKingdom": "United Kingdom"
+    "unitedKingdom": "United Kingdom",
+    "preset": "Preset",
+    "presetNone": "Standard size",
+    "presetKwama": "Kwama",
+    "presetVivien": "Vivien"
   },
   "sewing": {
     "title": "Sewing",

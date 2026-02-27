@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import type { PieceInfo } from "@shared/types/patterns";
@@ -7,25 +8,32 @@ interface Props {
   piece: PieceInfo;
   selected: boolean;
   onToggle: () => void;
+  style?: StyleProp<ViewStyle>;
 }
 
-export function PatternCard({ piece, selected, onToggle }: Props) {
+export function PatternCard({ piece, selected, onToggle, style }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
-    <View
+    <TouchableOpacity
+      onPress={onToggle}
+      activeOpacity={0.7}
       style={[
         styles.card,
         { backgroundColor: colors.card },
         selected && { borderColor: colors.primary, borderWidth: 2 },
+        style,
       ]}
     >
-      {selected && (
-        <View style={[styles.checkBadge, { backgroundColor: colors.primary }]}>
-          <Text style={styles.checkMark}>✓</Text>
-        </View>
-      )}
+      <View style={[
+        styles.checkBadge,
+        selected
+          ? { backgroundColor: colors.primary }
+          : { backgroundColor: "transparent", borderWidth: 2, borderColor: colors.primary },
+      ]}>
+        {selected && <Text style={styles.checkMark}>✓</Text>}
+      </View>
 
       <View
         style={[
@@ -42,32 +50,14 @@ export function PatternCard({ piece, selected, onToggle }: Props) {
         <Text style={[styles.name, { color: colors.text }]}>
           {t(`patterns.${piece.pattern_type}`)}
         </Text>
-        <TouchableOpacity
-          onPress={onToggle}
-          style={[
-            styles.toggleBtn,
-            {
-              backgroundColor: selected ? "#FEF2F2" : colors.primary,
-            },
-          ]}
-          activeOpacity={0.7}
-        >
-          <Text
-            style={[
-              styles.toggleText,
-              { color: selected ? "#DC2626" : "#fff" },
-            ]}
-          >
-            {selected ? t("shop.remove") : t("shop.add")}
-          </Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
+    aspectRatio: 3 / 2,
     borderRadius: 12,
     overflow: "hidden",
     marginBottom: 12,
@@ -94,7 +84,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   illustration: {
-    height: 140,
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -103,16 +93,6 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 12,
-  },
-  toggleBtn: {
-    borderRadius: 8,
-    paddingVertical: 8,
-    alignItems: "center",
-  },
-  toggleText: {
-    fontSize: 12,
     fontWeight: "600",
   },
 });

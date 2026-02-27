@@ -63,6 +63,35 @@ class TestMeasurementEndpoints:
         assert response.status_code == 404
 
 
+class TestPresetEndpoints:
+    def test_list_presets(self):
+        response = client.get("/api/measurements/presets")
+        assert response.status_code == 200
+        presets = response.json()
+        assert "kwama" in presets
+        assert "vivien" in presets
+        assert len(presets) == 2
+
+    def test_get_preset_vivien(self):
+        response = client.get("/api/measurements/presets/vivien")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["full_bust"] == 102.0
+        assert data["full_waist"] == 83.0
+        assert data["waist_to_floor"] == 126.0
+
+    def test_get_preset_kwama(self):
+        response = client.get("/api/measurements/presets/kwama")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["full_bust"] == 90.0
+        assert data["full_hip"] == 100.0
+
+    def test_get_preset_unknown(self):
+        response = client.get("/api/measurements/presets/unknown")
+        assert response.status_code == 404
+
+
 class TestPatternEndpoints:
     def test_list_pattern_types(self):
         response = client.get("/api/modelist/patterns")

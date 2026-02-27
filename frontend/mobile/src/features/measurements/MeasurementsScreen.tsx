@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
+import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import type { ColorPalette } from "../../theme/colors";
 import { ScreenWrapper, PageHeading } from "../../components";
 import { BodySilhouette } from "./BodySilhouette";
@@ -21,23 +22,22 @@ const SIZES = [
 export function MeasurementsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { isWide } = useResponsiveLayout();
   const {
     values,
     idk,
     activeField,
     size,
+    preset,
     updateField,
     toggleIdk,
     setActiveField,
     applySize,
+    applyPreset,
   } = useMeasurements();
 
-  return (
-    <ScreenWrapper>
-      <PageHeading>{t("measurements.title")}</PageHeading>
-
-      <BodySilhouette activeField={activeField} />
-
+  const sizeChips = (
+    <>
       {/* Size selector */}
       <View style={styles.sizeRow}>
         {SIZES.map((s) => (
@@ -51,20 +51,44 @@ export function MeasurementsScreen() {
         ))}
       </View>
 
-      {/* Measurement fields — matching web's 2-column grid with section headers */}
-      {MEASUREMENT_SECTIONS.map((section) => (
-        <View key={section.sectionKey}>
-          <Text
-            style={[
-              styles.sectionHeader,
-              { color: colors.primary, borderBottomColor: colors.cardBorder },
-            ]}
-          >
-            {t(section.sectionKey)}
-          </Text>
-          {section.fields.map((field) => (
+      {/* Preset selector */}
+      <View style={styles.sizeRow}>
+        <SizeChip
+          label={t("measurements.presetNone")}
+          isActive={preset === null}
+          onPress={() => applySize(size)}
+          colors={colors}
+        />
+        <SizeChip
+          label={t("measurements.presetKwama")}
+          isActive={preset === "kwama"}
+          onPress={() => applyPreset("kwama")}
+          colors={colors}
+        />
+        <SizeChip
+          label={t("measurements.presetVivien")}
+          isActive={preset === "vivien"}
+          onPress={() => applyPreset("vivien")}
+          colors={colors}
+        />
+      </View>
+    </>
+  );
+
+  const fieldSections = MEASUREMENT_SECTIONS.map((section) => (
+    <View key={section.sectionKey}>
+      <Text
+        style={[
+          styles.sectionHeader,
+          { color: colors.primary, borderBottomColor: colors.cardBorder },
+        ]}
+      >
+        {t(section.sectionKey)}
+      </Text>
+      <View style={isWide ? styles.fieldsGrid : undefined}>
+        {section.fields.map((field) => (
+          <View key={field} style={isWide ? styles.fieldCell : undefined}>
             <MeasurementFieldRow
-              key={field}
               field={field}
               value={values[field]}
               isIdk={!!idk[field]}
@@ -72,9 +96,35 @@ export function MeasurementsScreen() {
               onIdkToggle={toggleIdk}
               onFocus={setActiveField}
             />
-          ))}
+          </View>
+        ))}
+      </View>
+    </View>
+  ));
+
+  if (isWide) {
+    return (
+      <ScreenWrapper>
+        <PageHeading>{t("measurements.title")}</PageHeading>
+        <View style={styles.wideRow}>
+          <View style={styles.wideLeft}>
+            <BodySilhouette activeField={activeField} style={styles.silhouetteWide} />
+          </View>
+          <View style={styles.wideRight}>
+            {sizeChips}
+            {fieldSections}
+          </View>
         </View>
-      ))}
+      </ScreenWrapper>
+    );
+  }
+
+  return (
+    <ScreenWrapper>
+      <PageHeading>{t("measurements.title")}</PageHeading>
+      <BodySilhouette activeField={activeField} />
+      {sizeChips}
+      {fieldSections}
     </ScreenWrapper>
   );
 }
@@ -110,6 +160,27 @@ function SizeChip({
 }
 
 const styles = StyleSheet.create({
+  wideRow: {
+    flexDirection: "row",
+    gap: 32,
+  },
+  wideLeft: {
+    flex: 45,
+  },
+  wideRight: {
+    flex: 55,
+  },
+  silhouetteWide: {
+    maxWidth: 350,
+  },
+  fieldsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  fieldCell: {
+    flexBasis: "48%",
+  },
   sizeRow: {
     flexDirection: "row",
     flexWrap: "wrap",

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
@@ -16,6 +16,8 @@ export function ShopPage() {
   const [error, setError] = useState<string | null>(null);
   const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment, removeGarment } =
     useSelectionsStore();
+  const [showWarning, setShowWarning] = useState(false);
+  const warningTimer = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
     fetchPieces()
@@ -31,12 +33,23 @@ export function ShopPage() {
   const isSelected = (patternType: string) =>
     selections.some((s) => s.garment_name === patternType);
 
+  const activeCount = pieces.filter((p) => isSelected(p.pattern_type)).length;
+
+  const handleGoClick = () => {
+    if (activeCount > 0) {
+      navigate("/modelist");
+    } else {
+      setShowWarning(true);
+      clearTimeout(warningTimer.current);
+      warningTimer.current = setTimeout(() => setShowWarning(false), 2000);
+    }
+  };
+
   const handleToggle = async (piece: PieceInfo) => {
     if (isSelected(piece.pattern_type)) {
       await removeGarment(piece.pattern_type);
     } else {
       await addGarment(piece.pattern_type);
-      navigate("/modelist");
     }
   };
 
@@ -67,6 +80,26 @@ export function ShopPage() {
           ))}
         </div>
       )}
+
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-gray-200 bg-white/95 px-6 py-4 backdrop-blur-sm dark:border-gray-700 dark:bg-gray-900/95">
+        <div className="mx-auto flex max-w-5xl items-center justify-end gap-3">
+          {showWarning && (
+            <span className="text-sm text-amber-600 dark:text-amber-400">
+              {t("shop.selectFirst")}
+            </span>
+          )}
+          <button
+            onClick={handleGoClick}
+            className={`rounded-lg px-6 py-2.5 text-sm font-semibold transition-colors ${
+              activeCount > 0
+                ? "bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+                : "cursor-not-allowed bg-gray-300 text-gray-500 dark:bg-gray-700 dark:text-gray-500"
+            }`}
+          >
+            {t("shop.goToModelist")}{activeCount > 0 && ` (${activeCount})`}
+          </button>
+        </div>
+      </div>
     </>
   );
 }

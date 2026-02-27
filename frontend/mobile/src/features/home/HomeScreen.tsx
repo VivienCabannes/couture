@@ -1,17 +1,15 @@
-import { View, StyleSheet, useWindowDimensions } from "react-native";
+import { View, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { ScreenWrapper, PageHeading } from "../../components";
 import { useTheme } from "../../hooks/useTheme";
+import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { NavigationCard } from "./NavigationCard";
 import { CARDS, MAIN_CARDS, SIDE_CARDS } from "./cardData";
 
-const TABLET_BREAKPOINT = 768;
-
 export function HomeScreen() {
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
+  const { isWide } = useResponsiveLayout();
   const { colors } = useTheme();
-  const isWide = width >= TABLET_BREAKPOINT;
 
   return (
     <ScreenWrapper>

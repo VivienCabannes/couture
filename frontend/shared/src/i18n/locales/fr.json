@@ -26,6 +26,7 @@
     "pen": "Crayon",
     "eraser": "Gomme",
     "clear": "Effacer",
+    "color": "Couleur",
     "underDevelopment": "En cours de développement",
     "underDevelopmentMessage": "L'Atelier Création est en cours de développement. Les outils de dessin et de design seront bientôt disponibles."
   },
@@ -37,7 +38,9 @@
     "pieces": "{{count}} pi\u00e8ces",
     "add": "Ajouter",
     "remove": "Retirer",
-    "selected": "S\u00e9lectionn\u00e9"
+    "selected": "S\u00e9lectionn\u00e9",
+    "goToModelist": "Aller \u00e0 l'Atelier Mod\u00e9lisme",
+    "selectFirst": "S\u00e9lectionnez au moins un patron"
   },
   "modelist": {
     "title": "Atelier Mod\u00e9lisme",
@@ -91,7 +94,11 @@
     "sideWaistToFloor": "24. Hauteur taille c\u00f4t\u00e9 \u00e0 terre",
     "france": "France",
     "unitedStates": "\u00c9tats-Unis",
-    "unitedKingdom": "Royaume-Uni"
+    "unitedKingdom": "Royaume-Uni",
+    "preset": "Profil",
+    "presetNone": "Taille standard",
+    "presetKwama": "Kwama",
+    "presetVivien": "Vivien"
   },
   "sewing": {
     "title": "Assemblage",

@@ -6,12 +6,13 @@
 import { createStore } from "zustand/vanilla";
 import { SIZE_TABLE } from "../types/sizeTable";
 import type { FullMeasurements, MeasurementField } from "../types/measurements";
-import { getMeasurements, saveMeasurements } from "../api/measurements";
+import { getMeasurements, saveMeasurements, fetchPresetMeasurements } from "../api/measurements";
 
 export interface MeasurementsState {
   values: FullMeasurements;
   idk: Record<string, boolean>;
   size: number;
+  preset: string | null;
   loaded: boolean;
 }
 
@@ -24,6 +25,8 @@ export interface MeasurementsActions {
   toggleIdk: (field: MeasurementField) => void;
   /** Apply a standard size (recomputes all values from SIZE_TABLE) and persist. */
   applySize: (size: number) => void;
+  /** Apply an individual preset (fetches measurements from API) and persist. */
+  applyPreset: (person: string) => Promise<void>;
 }
 
 export type MeasurementsStore = MeasurementsState & MeasurementsActions;
@@ -55,6 +58,7 @@ export const measurementsStore = createStore<MeasurementsStore>()((set) => ({
   values: defaultValues(),
   idk: {},
   size: 38,
+  preset: null,
   loaded: false,
 
   fetch: async () => {
@@ -95,7 +99,21 @@ export const measurementsStore = createStore<MeasurementsStore>()((set) => ({
         const [base, incr] = SIZE_TABLE[key];
         (nextValues as Record<string, number>)[key] = +(base + incr * diff).toFixed(2);
       }
-      const next = { ...s, size: newSize, values: nextValues };
+      const next = { ...s, size: newSize, preset: null, values: nextValues };
+      debouncedSave(next);
+      return next;
+    });
+  },
+
+  applyPreset: async (person) => {
+    const data = await fetchPresetMeasurements(person);
+    set((s) => {
+      const next = {
+        ...s,
+        preset: person,
+        values: data as unknown as FullMeasurements,
+        idk: {},
+      };
       debouncedSave(next);
       return next;
     });

@@ -26,6 +26,7 @@
     "pen": "L\u00e1piz",
     "eraser": "Borrador",
     "clear": "Limpiar",
+    "color": "Color",
     "underDevelopment": "En desarrollo",
     "underDevelopmentMessage": "El Estudio de Diseño está en desarrollo. Las herramientas de dibujo y diseño estarán disponibles próximamente."
   },
@@ -37,7 +38,9 @@
     "pieces": "{{count}} piezas",
     "add": "A\u00f1adir",
     "remove": "Quitar",
-    "selected": "Seleccionado"
+    "selected": "Seleccionado",
+    "goToModelist": "Ir al Rincón del Modelista",
+    "selectFirst": "Seleccione al menos un patrón"
   },
   "modelist": {
     "title": "Rinc\u00f3n del Modelista",
@@ -91,7 +94,11 @@
     "sideWaistToFloor": "24. Cintura lateral al suelo",
     "france": "Francia",
     "unitedStates": "Estados Unidos",
-    "unitedKingdom": "Reino Unido"
+    "unitedKingdom": "Reino Unido",
+    "preset": "Perfil",
+    "presetNone": "Talla estándar",
+    "presetKwama": "Kwama",
+    "presetVivien": "Vivien"
   },
   "sewing": {
     "title": "Costura",

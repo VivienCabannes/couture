@@ -1,4 +1,5 @@
 import { View, StyleSheet } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
 import Svg, { Ellipse, Path, Line, G, Text as SvgText } from "react-native-svg";
 import type { MeasurementField } from "@shared/types";
 import { useTheme } from "../../hooks/useTheme";
@@ -38,17 +39,18 @@ const LINE_LABELS: Partial<
 
 interface Props {
   activeField: MeasurementField | null;
+  style?: StyleProp<ViewStyle>;
 }
 
 /** Body silhouette SVG with measurement reference lines, ported from web. */
-export function BodySilhouette({ activeField }: Props) {
+export function BodySilhouette({ activeField, style }: Props) {
   const { colors, isDark } = useTheme();
   const outlineColor = isDark ? "#6b7280" : "#9ca3af";
   const inactiveLine = isDark ? "#4b5563" : "#d1d5db";
   const inactiveLabel = isDark ? "#6b7280" : "#9ca3af";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, style]}>
       <Svg viewBox="0 0 200 500" width="100%" height="100%">
         {/* Head */}
         <Ellipse
