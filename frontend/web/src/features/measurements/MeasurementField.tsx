@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { MeasurementField as Field } from "@shared/types";
-import { FIELD_LABELS, FIELD_STEPS } from "./useMeasurements";
+import { FIELD_LABELS, FIELD_STEPS } from "@shared/data";
 
 interface Props {
   field: Field;

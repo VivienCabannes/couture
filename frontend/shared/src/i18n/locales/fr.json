@@ -32,7 +32,10 @@
     "patternIllustration": "Illustration du patron",
     "loading": "Chargement des v\u00eatements\u2026",
     "error": "\u00c9chec du chargement des v\u00eatements",
-    "pieces": "{{count}} pi\u00e8ces"
+    "pieces": "{{count}} pi\u00e8ces",
+    "add": "Ajouter",
+    "remove": "Retirer",
+    "selected": "S\u00e9lectionn\u00e9"
   },
   "modelist": {
     "title": "Atelier Mod\u00e9lisme",
@@ -47,7 +50,9 @@
     "size": "Taille",
     "stretch": "\u00c9lasticit\u00e9",
     "advancedControls": "Contr\u00f4les avanc\u00e9s",
-    "noPreview": "G\u00e9n\u00e9rez un patron pour voir l'aper\u00e7u"
+    "noPreview": "G\u00e9n\u00e9rez un patron pour voir l'aper\u00e7u",
+    "noGarment": "Aucun v\u00eatement s\u00e9lectionn\u00e9",
+    "chooseGarment": "Choisissez un v\u00eatement pour commencer :"
   },
   "measurements": {
     "title": "Mesures",

@@ -1,5 +1,7 @@
 """Pydantic models for garment-related API endpoints."""
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -14,3 +16,15 @@ class GarmentInfo(BaseModel):
     name: str
     label: str
     pieces: list[PieceInfo]
+
+
+class GarmentSelectionResponse(BaseModel):
+    """A selected garment with its adjustments."""
+    garment_name: str
+    added_at: float
+    adjustments: Optional[dict] = None
+
+
+class AdjustmentsUpdate(BaseModel):
+    """Request body for updating per-piece adjustments."""
+    adjustments: dict

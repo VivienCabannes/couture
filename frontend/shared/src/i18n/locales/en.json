@@ -32,7 +32,10 @@
     "patternIllustration": "Pattern illustration",
     "loading": "Loading garments\u2026",
     "error": "Failed to load garments",
-    "pieces": "{{count}} pieces"
+    "pieces": "{{count}} pieces",
+    "add": "Add",
+    "remove": "Remove",
+    "selected": "Selected"
   },
   "modelist": {
     "title": "Modelist Corner",
@@ -47,7 +50,9 @@
     "size": "Size",
     "stretch": "Stretch",
     "advancedControls": "Advanced Controls",
-    "noPreview": "Generate a pattern to see the preview"
+    "noPreview": "Generate a pattern to see the preview",
+    "noGarment": "No garment selected",
+    "chooseGarment": "Choose a garment to start working on:"
   },
   "measurements": {
     "title": "Measurements",

@@ -1,5 +1,35 @@
 
-I want to modify the organization of the cards in the main menu. I want to put the measurements on the top right, and the help of the bottom right, separated from the rest of the by a bigger horizontal spacing and a slight vertical bar to separate it from the rest.
+
+Publish the website.
+
+Check that the cli still works.
+Remove the old folder.
+
+Clean the website and make a big doc with everything.
+
+Evaluate Zustand solution.
+Clean the back-end.
+
+Persistence of measurements, pattern selected and the modifications to the patterns.
+
+Clean the measurements webpage and connected to the back-end.
+Clean the pattern rack, the selection, and connect it to the back-end.
+Clean the Atelier Modelism and connect it to the back-end.
+
+Proto of each subpages more properly.
+
+Proto of the flow
+Flow between Pattern Shop and Modelism.
+Save the current project, start a new project.
+    Be able to save projects (like conversations).
+    Be able to save measurements.
+
+Clean the docs and the help.
+Clean the Readme.
+
+At the end of the readme, explain the diff with Seamly2D, Valentina, Clo3D and Leectra.
+
+How to ensure the flow between the parts is really (maybe numeroting the numbers).
 
 - Clean the docs and the readme.
 - Populate the prototype with the existing pattern maker tool
@@ -11,6 +41,11 @@ App hosted online working on the browser
 App on tablet.
 
 Add a `license` file in the docs/
+    Open source code
+    IP on design and algorithm to create the pattern
+    easy to use and contribute for many people
+    being able to make money if the project works well
+    barring concurrent applications from stealing and making a lot of money behind our back
 
 For the name, try to optimize SEO, couture is too generic
 

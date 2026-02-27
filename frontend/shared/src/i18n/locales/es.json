@@ -32,7 +32,10 @@
     "patternIllustration": "Ilustraci\u00f3n del patr\u00f3n",
     "loading": "Cargando prendas\u2026",
     "error": "Error al cargar las prendas",
-    "pieces": "{{count}} piezas"
+    "pieces": "{{count}} piezas",
+    "add": "A\u00f1adir",
+    "remove": "Quitar",
+    "selected": "Seleccionado"
   },
   "modelist": {
     "title": "Rinc\u00f3n del Modelista",
@@ -47,7 +50,9 @@
     "size": "Talla",
     "stretch": "Elasticidad",
     "advancedControls": "Controles avanzados",
-    "noPreview": "Genere un patr\u00f3n para ver la vista previa"
+    "noPreview": "Genere un patr\u00f3n para ver la vista previa",
+    "noGarment": "Ning\u00fan patr\u00f3n seleccionado",
+    "chooseGarment": "Elija una prenda para comenzar:"
   },
   "measurements": {
     "title": "Medidas",

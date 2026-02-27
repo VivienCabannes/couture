@@ -1,6 +1,7 @@
 """FastAPI application for the Couture pattern drafting backend."""
 
 import os
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,8 +9,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.shop.router import router as shop_router
 from app.modelist.router import router as modelist_router
 from app.measurements.router import router as measurements_router
+from database import init_db
 
-app = FastAPI(title="Couture API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Create database tables on startup."""
+    init_db()
+    yield
+
+
+app = FastAPI(title="Couture API", version="0.1.0", lifespan=lifespan)
 
 # CORS: always allow local dev origins; add production origins via CORS_ORIGINS env var
 origins = [

@@ -11,12 +11,14 @@ import type {
 interface UsePatternFormOptions {
   type: string;
   onError?: (message: string) => void;
+  /** When provided, use these measurements instead of fetching defaults from the API. */
+  initialMeasurements?: Record<string, number>;
 }
 
-export function usePatternForm({ type, onError }: UsePatternFormOptions) {
+export function usePatternForm({ type, onError, initialMeasurements }: UsePatternFormOptions) {
   const [patternInfo, setPatternInfo] = useState<PatternTypeInfo | null>(null);
-  const [selectedSize, setSelectedSize] = useState<number | null>(38);
-  const [measurements, setMeasurements] = useState<Record<string, number>>({});
+  const [selectedSize, setSelectedSize] = useState<number | null>(initialMeasurements ? null : 38);
+  const [measurements, setMeasurements] = useState<Record<string, number>>(initialMeasurements ?? {});
   const [controlParams, setControlParams] = useState<Record<string, number>>({});
   const [stretch, setStretch] = useState<StretchInput>({ horizontal: 0, vertical: 0, usage: 1 });
   const [result, setResult] = useState<PatternResponse | null>(null);
@@ -38,7 +40,7 @@ export function usePatternForm({ type, onError }: UsePatternFormOptions) {
     });
   }, [type]);
 
-  // Load default measurements when size changes
+  // Load default measurements when size changes (skip if initialMeasurements provided and no size selected)
   useEffect(() => {
     if (selectedSize !== null) {
       fetchDefaultMeasurements(selectedSize).then((m) => {

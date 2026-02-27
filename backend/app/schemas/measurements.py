@@ -1,5 +1,7 @@
 """Pydantic models for measurement-related API endpoints."""
 
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -29,3 +31,17 @@ class MeasurementsResponse(BaseModel):
     waist_to_knee: float
     waist_to_floor: float
     side_waist_to_floor: float
+
+
+class SavedMeasurementsRequest(BaseModel):
+    """Request body for saving user measurements."""
+    size: int = 38
+    values: dict[str, float]
+    idk: Optional[dict[str, bool]] = None
+
+
+class SavedMeasurementsResponse(BaseModel):
+    """Response for saved measurements."""
+    size: int
+    values: dict[str, float]
+    idk: dict[str, bool]

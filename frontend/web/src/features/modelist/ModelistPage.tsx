@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
@@ -7,24 +7,68 @@ import { PieceTabs } from "./PieceTabs";
 import { PieceControls } from "./PieceControls";
 import { fetchGarments } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
+import { useMeasurementsStore, useSelectionsStore } from "../../stores";
 import type { GarmentInfo, PieceInfo } from "@shared/types/patterns";
 
 export function ModelistPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { garmentType } = useParams<{ garmentType: string }>();
   const [garment, setGarment] = useState<GarmentInfo | null>(null);
+  const [allGarments, setAllGarments] = useState<GarmentInfo[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
+  const { values: measurementValues, loaded: measurementsLoaded, fetch: fetchMeasurements } =
+    useMeasurementsStore();
+  const { loaded: selectionsLoaded, fetch: fetchSelections } = useSelectionsStore();
 
   useEffect(() => {
-    if (garmentType) {
-      fetchGarments().then((garments) => {
+    if (!measurementsLoaded) fetchMeasurements();
+  }, [measurementsLoaded, fetchMeasurements]);
+
+  useEffect(() => {
+    if (!selectionsLoaded) fetchSelections();
+  }, [selectionsLoaded, fetchSelections]);
+
+  useEffect(() => {
+    fetchGarments().then((garments) => {
+      setAllGarments(garments);
+      if (garmentType) {
         const found = garments.find((g) => g.name === garmentType);
         if (found) setGarment(found);
-      });
-    }
+      }
+    });
   }, [garmentType]);
 
   const activePiece: PieceInfo | null = garment?.pieces[activeIdx] ?? null;
+
+  // When no garmentType in URL, show a garment picker
+  if (!garmentType && allGarments.length > 0) {
+    return (
+      <>
+        <BackLink />
+        <PageHeading>{t("modelist.title")}</PageHeading>
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
+          {t("modelist.chooseGarment")}
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {allGarments.map((g) => (
+            <button
+              key={g.name}
+              onClick={() => navigate(`/modelist/${g.name}`)}
+              className="rounded-xl border border-gray-200 bg-white p-4 text-left transition-colors hover:border-blue-400 hover:bg-blue-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-blue-500 dark:hover:bg-gray-700"
+            >
+              <div className="text-base font-semibold text-gray-900 dark:text-gray-50">
+                {g.label}
+              </div>
+              <div className="text-[0.8125rem] text-gray-500 dark:text-gray-400">
+                {t("shop.pieces", { count: g.pieces.length })}
+              </div>
+            </button>
+          ))}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -42,16 +86,28 @@ export function ModelistPage() {
             activeIdx={activeIdx}
             onSelect={setActiveIdx}
           />
-          {activePiece && <PieceEditor piece={activePiece} />}
+          {activePiece && measurementsLoaded && (
+            <PieceEditor
+              key={activePiece.pattern_type}
+              piece={activePiece}
+              initialMeasurements={measurementValues as unknown as Record<string, number>}
+            />
+          )}
         </>
       )}
     </>
   );
 }
 
-function PieceEditor({ piece }: { piece: PieceInfo }) {
+function PieceEditor({
+  piece,
+  initialMeasurements,
+}: {
+  piece: PieceInfo;
+  initialMeasurements?: Record<string, number>;
+}) {
   const { t } = useTranslation();
-  const form = usePatternForm({ type: piece.pattern_type });
+  const form = usePatternForm({ type: piece.pattern_type, initialMeasurements });
   const [view, setView] = useState<"construction" | "pattern">("construction");
 
   const svgContent = form.result

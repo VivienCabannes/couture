@@ -1,6 +1,9 @@
-import { useState, useCallback } from "react";
-import { SIZE_TABLE } from "@shared/types";
-import type { MeasurementField, FullMeasurements } from "@shared/types";
+/**
+ * Platform-agnostic measurement metadata — sections, labels, and step values.
+ * No React dependency; safe for use in both web and mobile.
+ */
+
+import type { MeasurementField } from "../types/measurements";
 
 /** The 24 fields grouped by section for display order. */
 export const MEASUREMENT_SECTIONS = [
@@ -107,53 +110,3 @@ export const FIELD_STEPS: Record<MeasurementField, number> = {
   waist_to_floor: 0.5,
   side_waist_to_floor: 0.5,
 };
-
-function defaultValues(): FullMeasurements {
-  const m = {} as FullMeasurements;
-  for (const key of Object.keys(SIZE_TABLE) as MeasurementField[]) {
-    m[key] = SIZE_TABLE[key][0];
-  }
-  return m;
-}
-
-export function useMeasurements() {
-  const [values, setValues] = useState<FullMeasurements>(defaultValues);
-  const [idk, setIdk] = useState<Record<string, boolean>>({});
-  const [activeField, setActiveField] = useState<MeasurementField | null>(null);
-  const [size, setSize] = useState(38);
-
-  const updateField = useCallback(
-    (field: MeasurementField, value: number) => {
-      setValues((prev) => ({ ...prev, [field]: value }));
-    },
-    [],
-  );
-
-  const toggleIdk = useCallback((field: MeasurementField) => {
-    setIdk((prev) => ({ ...prev, [field]: !prev[field] }));
-  }, []);
-
-  const applySize = useCallback((newSize: number) => {
-    setSize(newSize);
-    const diff = (newSize - 38) / 2;
-    setValues((prev) => {
-      const next = { ...prev };
-      for (const key of Object.keys(SIZE_TABLE) as MeasurementField[]) {
-        const [base, incr] = SIZE_TABLE[key];
-        next[key] = +(base + incr * diff).toFixed(2);
-      }
-      return next;
-    });
-  }, []);
-
-  return {
-    values,
-    idk,
-    activeField,
-    size,
-    updateField,
-    toggleIdk,
-    setActiveField,
-    applySize,
-  };
-}

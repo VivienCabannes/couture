@@ -3,5 +3,8 @@
   "private": true,
   "devDependencies": {
     "@types/react": "^19.2.14"
+  },
+  "dependencies": {
+    "zustand": "^5.0.11"
   }
 }

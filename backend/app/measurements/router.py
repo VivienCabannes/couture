@@ -1,11 +1,18 @@
-"""Measurements API — standard sizes and default measurements."""
+"""Measurements API — standard sizes, default measurements, and saved measurements."""
 
 from dataclasses import asdict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 from app.core.measurements import default_measurements
-from app.schemas.measurements import MeasurementsResponse
+from app.core.models import SavedMeasurements
+from app.schemas.measurements import (
+    MeasurementsResponse,
+    SavedMeasurementsRequest,
+    SavedMeasurementsResponse,
+)
+from database import get_db
 
 router = APIRouter(prefix="/api/measurements", tags=["measurements"])
 
@@ -25,3 +32,41 @@ def get_default_measurements(size: int):
         raise HTTPException(status_code=404, detail=f"Size {size} not available. Choose from {AVAILABLE_SIZES}")
     fm = default_measurements(size)
     return MeasurementsResponse(**asdict(fm))
+
+
+@router.get("", response_model=SavedMeasurementsResponse)
+def get_saved_measurements(db: Session = Depends(get_db)):
+    """Return saved measurements, or defaults for size 38 if none saved."""
+    row = db.query(SavedMeasurements).filter(SavedMeasurements.id == 1).first()
+    if row and row.values:
+        return SavedMeasurementsResponse(
+            size=row.size,
+            values=row.values,
+            idk=row.idk or {},
+        )
+    fm = default_measurements(38)
+    return SavedMeasurementsResponse(
+        size=38,
+        values=asdict(fm),
+        idk={},
+    )
+
+
+@router.put("", response_model=SavedMeasurementsResponse)
+def save_measurements(body: SavedMeasurementsRequest, db: Session = Depends(get_db)):
+    """Save user measurements (upsert singleton row)."""
+    row = db.query(SavedMeasurements).filter(SavedMeasurements.id == 1).first()
+    if row:
+        row.size = body.size
+        row.values = body.values
+        row.idk = body.idk or {}
+    else:
+        row = SavedMeasurements(id=1, size=body.size, values=body.values, idk=body.idk or {})
+        db.add(row)
+    db.commit()
+    db.refresh(row)
+    return SavedMeasurementsResponse(
+        size=row.size,
+        values=row.values,
+        idk=row.idk or {},
+    )

@@ -1,9 +1,12 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { BodySilhouette } from "./BodySilhouette";
 import { MeasurementFieldRow } from "./MeasurementField";
-import { useMeasurements, MEASUREMENT_SECTIONS } from "./useMeasurements";
+import { MEASUREMENT_SECTIONS } from "@shared/data";
+import { useMeasurementsStore } from "../../stores";
+import type { MeasurementField } from "@shared/types";
 
 const SIZES = [
   { value: 34, label: "T34 (XS)" },
@@ -18,16 +21,13 @@ const SIZES = [
 
 export function MeasurementsPage() {
   const { t } = useTranslation();
-  const {
-    values,
-    idk,
-    activeField,
-    size,
-    updateField,
-    toggleIdk,
-    setActiveField,
-    applySize,
-  } = useMeasurements();
+  const { values, idk, size, updateField, toggleIdk, applySize, fetch, loaded } =
+    useMeasurementsStore();
+  const [activeField, setActiveField] = useState<MeasurementField | null>(null);
+
+  useEffect(() => {
+    if (!loaded) fetch();
+  }, [loaded, fetch]);
 
   return (
     <>

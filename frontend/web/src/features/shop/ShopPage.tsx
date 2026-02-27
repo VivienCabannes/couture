@@ -5,6 +5,7 @@ import { BackLink } from "../../components/BackLink";
 import { PageHeading } from "../../components/PageHeading";
 import { PatternCard } from "./PatternCard";
 import { fetchGarments } from "@shared/api";
+import { useSelectionsStore } from "../../stores";
 import type { GarmentInfo } from "@shared/types/patterns";
 
 export function ShopPage() {
@@ -13,6 +14,8 @@ export function ShopPage() {
   const [garments, setGarments] = useState<GarmentInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { selections, loaded: selectionsLoaded, fetch: fetchSelections, addGarment, removeGarment } =
+    useSelectionsStore();
 
   useEffect(() => {
     fetchGarments()
@@ -20,6 +23,22 @@ export function ShopPage() {
       .catch(() => setError(t("shop.error")))
       .finally(() => setLoading(false));
   }, [t]);
+
+  useEffect(() => {
+    if (!selectionsLoaded) fetchSelections();
+  }, [selectionsLoaded, fetchSelections]);
+
+  const isSelected = (name: string) =>
+    selections.some((s) => s.garment_name === name);
+
+  const handleToggle = async (garment: GarmentInfo) => {
+    if (isSelected(garment.name)) {
+      await removeGarment(garment.name);
+    } else {
+      await addGarment(garment.name);
+      navigate(`/modelist/${garment.name}`);
+    }
+  };
 
   return (
     <>
@@ -42,6 +61,8 @@ export function ShopPage() {
             <PatternCard
               key={g.name}
               garment={g}
+              selected={isSelected(g.name)}
+              onToggle={() => handleToggle(g)}
               onClick={() => navigate(`/modelist/${g.name}`)}
             />
           ))}
