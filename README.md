@@ -55,7 +55,22 @@ old/                # Legacy codebase (read-only reference)
 
 ## Getting started
 
-> TBD — tooling is being set up.
+### Web app
+
+```bash
+cd frontend/web
+npm install
+npm run dev
+```
+
+This starts the Vite dev server (defaults to `http://localhost:5173`).
+
+To create a production build:
+
+```bash
+npm run build    # type-check + build
+npm run preview  # preview the production build locally
+```
 
 ## Documentation
 
