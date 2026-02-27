@@ -35,10 +35,6 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 - `PAGES.md` — page descriptions and layouts
 - `FRONT_PAGE_DESIGN.md` — front page design spec
 
-### Legacy (`old/`)
-
-- Contains the previous codebase. **NEVER ACCESS the `old/` directory.**
-
 ## Conventions
 
 - Backend and frontend modules mirror each other (same section names: designer, shop, modelist, measurements, sewing, help)
