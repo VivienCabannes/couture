@@ -31,6 +31,9 @@ ENV/
 **/src-tauri/target/
 **/src-tauri/gen/
 
+# Environment files
+.env
+
 # Docker
 docker-compose.override.yml
 
