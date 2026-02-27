@@ -27,9 +27,10 @@ ENV/
 !frontend/web/src-tauri/icons/*.png
 !frontend/mobile/assets/*.png
 
-# Tauri
+# Rust / Tauri
 **/src-tauri/target/
 **/src-tauri/gen/
+rust_backend/target/
 
 # Environment files
 .env
