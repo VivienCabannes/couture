@@ -53,9 +53,24 @@ docs/               # Project documentation
 old/                # Legacy codebase (read-only reference)
 ```
 
+## Prerequisites
+
+- Python 3.11+
+- Node.js 18+
+
 ## Getting started
 
-### Web app
+### 1. Backend
+
+```bash
+cd backend
+pip install -e ".[dev]"
+uvicorn app.main:app --reload
+```
+
+The API runs at `http://localhost:8000`. Verify with `http://localhost:8000/health`.
+
+### 2. Web app
 
 ```bash
 cd frontend/web
@@ -64,12 +79,30 @@ npm run dev
 ```
 
 This starts the Vite dev server (defaults to `http://localhost:5173`).
+The app connects to the backend at `http://localhost:8000` (override with `VITE_API_URL`).
 
 To create a production build:
 
 ```bash
 npm run build    # type-check + build
 npm run preview  # preview the production build locally
+```
+
+### 3. Mobile app
+
+```bash
+cd frontend/mobile
+npm install
+npx expo start
+```
+
+The app connects to the backend at `http://localhost:8000` (override with `EXPO_PUBLIC_API_URL`).
+
+### Running tests
+
+```bash
+cd backend
+pytest
 ```
 
 ## Documentation
