@@ -38,7 +38,7 @@ export function getSelections(): Promise<GarmentSelectionData[]> {
 
 /** Add a garment to selections. */
 export function addSelection(garmentName: string): Promise<GarmentSelectionData> {
-  if (isTauriApp()) return tauriInvoke<GarmentSelectionData>("add_selection", { garment_name: garmentName });
+  if (isTauriApp()) return tauriInvoke<GarmentSelectionData>("add_selection", { garmentName });
   return apiFetch<GarmentSelectionData>(`/api/shop/selections/${garmentName}`, {
     method: "POST",
   });
@@ -46,7 +46,7 @@ export function addSelection(garmentName: string): Promise<GarmentSelectionData>
 
 /** Remove a garment from selections. */
 export function removeSelection(garmentName: string): Promise<void> {
-  if (isTauriApp()) return tauriInvoke<void>("remove_selection", { garment_name: garmentName });
+  if (isTauriApp()) return tauriInvoke<void>("remove_selection", { garmentName });
   return apiFetch<void>(`/api/shop/selections/${garmentName}`, {
     method: "DELETE",
   });
@@ -57,7 +57,7 @@ export function saveAdjustments(
   garmentName: string,
   adjustments: Record<string, unknown>,
 ): Promise<GarmentSelectionData> {
-  if (isTauriApp()) return tauriInvoke<GarmentSelectionData>("save_adjustments", { garment_name: garmentName, adjustments });
+  if (isTauriApp()) return tauriInvoke<GarmentSelectionData>("save_adjustments", { garmentName, adjustments });
   return apiFetch<GarmentSelectionData>(
     `/api/shop/selections/${garmentName}/adjustments`,
     {
