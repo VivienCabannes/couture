@@ -98,7 +98,9 @@
     "preset": "Profil",
     "presetNone": "Taille standard",
     "presetKwama": "Kwama",
-    "presetVivien": "Vivien"
+    "presetVivien": "Vivien",
+    "backView": "Vue de dos",
+    "frontView": "Vue de face"
   },
   "sewing": {
     "title": "Assemblage",

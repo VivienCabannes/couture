@@ -1,15 +1,10 @@
 import { useTranslation } from "react-i18next";
-import { BackLink } from "../../components/BackLink";
-import { PageHeading } from "../../components/PageHeading";
 
 export function SewingPage() {
   const { t } = useTranslation();
 
   return (
     <>
-      <BackLink />
-      <PageHeading>{t("sewing.title")}</PageHeading>
-
       <div className="flex min-h-[300px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-gray-300 p-12 text-center text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400">
         <svg
           viewBox="0 0 24 24"

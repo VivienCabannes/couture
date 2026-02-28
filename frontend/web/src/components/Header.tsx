@@ -2,18 +2,46 @@ import { Link } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { LanguageSelector } from "./LanguageSelector";
 
-export function Header() {
+interface HeaderProps {
+  /** Page title shown with a back arrow on sub-pages. Omit on the home page. */
+  title?: string;
+}
+
+export function Header({ title }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
 
   return (
     <header className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors duration-300 dark:bg-gray-800 dark:shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
       <div className="mx-auto flex max-w-[1152px] items-center gap-3 p-6">
-        <Link
-          to="/"
-          className="text-xl font-semibold text-gray-900 no-underline transition-colors duration-200 hover:text-blue-600 dark:text-gray-50 dark:hover:text-blue-400"
-        >
-          Couture
-        </Link>
+        {title ? (
+          <div className="flex items-center gap-2">
+            <Link
+              to="/"
+              aria-label="Back to home"
+              className="flex items-center text-gray-900 transition-colors duration-200 hover:text-blue-600 dark:text-gray-50 dark:hover:text-blue-400"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                className="h-5 w-5 fill-none stroke-current stroke-2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M19 12H5" />
+                <path d="M12 19l-7-7 7-7" />
+              </svg>
+            </Link>
+            <span className="text-xl font-semibold text-gray-900 dark:text-gray-50">
+              {title}
+            </span>
+          </div>
+        ) : (
+          <Link
+            to="/"
+            className="text-xl font-semibold text-gray-900 no-underline transition-colors duration-200 hover:text-blue-600 dark:text-gray-50 dark:hover:text-blue-400"
+          >
+            Couture
+          </Link>
+        )}
         <div className="flex-1" />
         <button
           onClick={toggleTheme}

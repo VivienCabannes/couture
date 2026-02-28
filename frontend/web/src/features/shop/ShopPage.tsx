@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BackLink } from "../../components/BackLink";
-import { PageHeading } from "../../components/PageHeading";
 import { PatternCard } from "./PatternCard";
 import { fetchPieces } from "@shared/api";
 import { useSelectionsStore } from "../../stores";
@@ -55,9 +53,6 @@ export function ShopPage() {
 
   return (
     <>
-      <BackLink />
-      <PageHeading>{t("shop.title")}</PageHeading>
-
       {loading && (
         <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
           {t("shop.loading")}

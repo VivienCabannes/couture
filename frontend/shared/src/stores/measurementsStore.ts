@@ -106,16 +106,20 @@ export const measurementsStore = createStore<MeasurementsStore>()((set) => ({
   },
 
   applyPreset: async (person) => {
-    const data = await fetchPresetMeasurements(person);
-    set((s) => {
-      const next = {
-        ...s,
-        preset: person,
-        values: data as unknown as FullMeasurements,
-        idk: {},
-      };
-      debouncedSave(next);
-      return next;
-    });
+    try {
+      const data = await fetchPresetMeasurements(person);
+      set((s) => {
+        const next = {
+          ...s,
+          preset: person,
+          values: data as unknown as FullMeasurements,
+          idk: {},
+        };
+        debouncedSave(next);
+        return next;
+      });
+    } catch (err) {
+      console.error("Failed to load preset:", err);
+    }
   },
 }));

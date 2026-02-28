@@ -1,14 +1,9 @@
-import { useTranslation } from "react-i18next";
-import { PageHeading } from "../../components/PageHeading";
 import { NavigationCard } from "./NavigationCard";
 import { MAIN_CARDS, SIDE_CARDS } from "./cardData";
 
 export function HomePage() {
-  const { t } = useTranslation();
-
   return (
     <>
-      <PageHeading>{t("home.welcome")}</PageHeading>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_2px_1fr] gap-8">
         {/* Row 1 main */}
         <div className="lg:col-start-1 lg:row-start-1">

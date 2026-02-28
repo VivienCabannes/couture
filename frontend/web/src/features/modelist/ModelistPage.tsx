@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BackLink } from "../../components/BackLink";
-import { PageHeading } from "../../components/PageHeading";
 import { PieceTabs } from "./PieceTabs";
 import { PieceControls } from "./PieceControls";
 import { PatternPreview } from "./PatternPreview";
@@ -42,8 +40,6 @@ export function ModelistPage() {
   if (selectionsLoaded && allPieces.length > 0 && selectedPieces.length === 0) {
     return (
       <>
-        <BackLink />
-        <PageHeading>{t("modelist.title")}</PageHeading>
         <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           {t("modelist.noPiecesSelected")}
         </p>
@@ -59,9 +55,6 @@ export function ModelistPage() {
 
   return (
     <>
-      <BackLink />
-      <PageHeading>{t("modelist.title")}</PageHeading>
-
       {selectedPieces.length === 0 ? (
         <p className="py-12 text-center text-sm text-gray-500 dark:text-gray-400">
           {t("shop.loading")}

@@ -98,7 +98,9 @@
     "preset": "Perfil",
     "presetNone": "Talla estándar",
     "presetKwama": "Kwama",
-    "presetVivien": "Vivien"
+    "presetVivien": "Vivien",
+    "backView": "Vista trasera",
+    "frontView": "Vista frontal"
   },
   "sewing": {
     "title": "Costura",

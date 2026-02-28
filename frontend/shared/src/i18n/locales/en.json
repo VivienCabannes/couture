@@ -98,7 +98,9 @@
     "preset": "Preset",
     "presetNone": "Standard size",
     "presetKwama": "Kwama",
-    "presetVivien": "Vivien"
+    "presetVivien": "Vivien",
+    "backView": "Back view",
+    "frontView": "Front view"
   },
   "sewing": {
     "title": "Sewing",

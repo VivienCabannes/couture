@@ -1,7 +1,5 @@
 import { useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { BackLink } from "../../components/BackLink";
-import { PageHeading } from "../../components/PageHeading";
 
 type Tool = "pen" | "eraser";
 
@@ -122,9 +120,6 @@ export function DesignerPage() {
           </div>
         </div>
       )}
-
-      <BackLink />
-      <PageHeading>{t("designer.title")}</PageHeading>
 
       <div className="flex min-h-[60vh] gap-6 max-lg:flex-col">
         {/* Left: Drawing Canvas */}
