@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import Svg, { Circle, Path } from "react-native-svg";
 import { useTheme } from "../../hooks/useTheme";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 
 export function SewingScreen() {
   const { t } = useTranslation();
@@ -12,8 +12,6 @@ export function SewingScreen() {
 
   return (
     <ScreenWrapper>
-      <PageHeading>{t("sewing.title")}</PageHeading>
-
       <View
         style={[styles.placeholder, { borderColor: colors.border }]}
       >

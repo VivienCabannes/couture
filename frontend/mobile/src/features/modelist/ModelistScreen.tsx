@@ -13,7 +13,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { SvgXml } from "react-native-svg";
 import { useTheme } from "../../hooks/useTheme";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 import { fetchPieces } from "@shared/api";
 import { usePatternForm } from "@shared/hooks/usePatternForm";
 import { useSelectionsStore, useMeasurementsStore } from "../../stores";
@@ -54,7 +54,6 @@ export function ModelistScreen() {
   if (selectionsLoaded && allPieces.length > 0 && selectedPieces.length === 0) {
     return (
       <ScreenWrapper>
-        <PageHeading>{t("modelist.title")}</PageHeading>
         <Text style={[styles.message, { color: colors.textSecondary }]}>
           {t("modelist.noPiecesSelected")}
         </Text>
@@ -70,8 +69,6 @@ export function ModelistScreen() {
 
   return (
     <ScreenWrapper>
-      <PageHeading>{t("modelist.title")}</PageHeading>
-
       {selectedPieces.length === 0 ? (
         <Text style={[styles.message, { color: colors.textSecondary }]}>
           {t("shop.loading")}

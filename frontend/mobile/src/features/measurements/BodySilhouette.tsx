@@ -1,173 +1,533 @@
-import { View, StyleSheet } from "react-native";
+import { useMemo } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
-import Svg, { Ellipse, Path, Line, G, Text as SvgText } from "react-native-svg";
-import type { MeasurementField } from "@shared/types";
+import Svg, {
+  Ellipse,
+  Path,
+  Line,
+  G,
+  Circle,
+  Text as SvgText,
+  Defs,
+  LinearGradient,
+  Stop,
+} from "react-native-svg";
+import { useTranslation } from "react-i18next";
+import type { MeasurementField, FullMeasurements } from "@shared/types";
+import { MEASUREMENT_SECTIONS } from "@shared/data";
 import { useTheme } from "../../hooks/useTheme";
 
-/** SVG measurement line definitions: field -> [x1, y1, x2, y2]. */
-const LINES: Partial<
-  Record<MeasurementField, [number, number, number, number]>
-> = {
-  neck_circumference: [8, 58, 192, 58],
-  shoulder_length: [8, 74, 192, 74],
-  full_bust: [8, 130, 192, 130],
-  full_waist: [8, 190, 192, 190],
-  small_hip: [8, 230, 192, 230],
-  full_hip: [8, 250, 192, 250],
-  upper_arm: [8, 100, 30, 100],
-  wrist: [8, 255, 20, 255],
-  waist_to_knee: [8, 380, 192, 380],
-  waist_to_floor: [8, 475, 192, 475],
-  crotch_depth: [8, 320, 192, 320],
-};
+/** Field number mapping (1–24) following section display order. */
+const ALL_FIELDS = MEASUREMENT_SECTIONS.flatMap((s) => s.fields);
+const FIELD_NUM = Object.fromEntries(
+  ALL_FIELDS.map((f, i) => [f, i + 1]),
+) as Record<MeasurementField, number>;
 
-const LINE_LABELS: Partial<
-  Record<MeasurementField, [number, number, string]>
-> = {
-  neck_circumference: [194, 61, "9"],
-  shoulder_length: [194, 77, "12"],
-  full_bust: [194, 133, "3"],
-  full_waist: [194, 193, "6"],
-  small_hip: [194, 233, "7"],
-  full_hip: [194, 253, "8"],
-  upper_arm: [4, 97, "16"],
-  wrist: [4, 252, "18"],
-  waist_to_knee: [194, 383, "22"],
-  waist_to_floor: [194, 478, "23"],
-  crotch_depth: [194, 323, "20"],
-};
+type MeasureLine =
+  | { type: "h"; field: MeasurementField; y: number; x1: number; x2: number }
+  | { type: "v"; field: MeasurementField; y1: number; y2: number; x: number };
 
 interface Props {
+  values: FullMeasurements;
   activeField: MeasurementField | null;
+  onFieldSelect?: (field: MeasurementField) => void;
   style?: StyleProp<ViewStyle>;
 }
 
-/** Body silhouette SVG with measurement reference lines, ported from web. */
-export function BodySilhouette({ activeField, style }: Props) {
-  const { colors, isDark } = useTheme();
-  const outlineColor = isDark ? "#6b7280" : "#9ca3af";
-  const inactiveLine = isDark ? "#4b5563" : "#d1d5db";
-  const inactiveLabel = isDark ? "#6b7280" : "#9ca3af";
+// ── Geometry computation (memoized) ─────────────────────────────────────────
+
+function computeGeometry(v: FullMeasurements) {
+  const totalBodyH = v.waist_to_floor + v.back_waist_length;
+  const scale = 420 / totalBodyH;
+  const cx = 150;
+
+  const pt = (x: number, y: number) => `${x.toFixed(1)},${y.toFixed(1)}`;
+
+  // Vertical positions (y increases downward)
+  const headR = 22;
+  const headCy = 40;
+  const neckBase = headCy + headR + 8;
+  const shoulderY = neckBase + 6;
+  const waistY = shoulderY + v.back_waist_length * scale;
+  const bustY = shoulderY + v.bust_height * scale;
+  const smallHipY = waistY + v.waist_to_hip * 0.6 * scale;
+  const hipY = waistY + v.waist_to_hip * scale;
+  const crotchY = waistY + v.crotch_depth * scale;
+  const kneeY = waistY + v.waist_to_knee * scale;
+  const floorY = waistY + v.waist_to_floor * scale;
+
+  // Half-widths (circumference → front-view half-width via /π approximation)
+  const neckHW = (v.neck_circumference / Math.PI) * scale * 0.5;
+  const shoulderHW = (v.half_back_width + v.shoulder_length) * scale * 0.52;
+  const bustHW = (v.full_bust / Math.PI) * scale * 0.55;
+  const waistHW = (v.full_waist / Math.PI) * scale * 0.55;
+  const smallHipHW = (v.small_hip / Math.PI) * scale * 0.55;
+  const hipHW = (v.full_hip / Math.PI) * scale * 0.55;
+  const upperArmW = (v.upper_arm / Math.PI) * scale * 0.5;
+  const wristW = (v.wrist / Math.PI) * scale * 0.5;
+
+  // Leg widths
+  const thighHW = hipHW * 0.38;
+  const kneeHW = thighHW * 0.7;
+  const ankleHW = wristW * 0.8;
+  const legGap = thighHW * 0.3;
+
+  // Arm geometry
+  const armLen = v.arm_length * scale;
+  const elbowY = shoulderY + v.elbow_height * scale;
+  const wristY = shoulderY + armLen;
+  const armAngle = (12 * Math.PI) / 180;
+  const armDx = Math.sin(armAngle);
+  const armDy = Math.cos(armAngle);
+
+  // ── Head ──
+  const headRx = headR * 0.78;
+
+  // ── Hair ──
+  const hairD = [
+    `M${cx - headR * 0.7} ${headCy - headR * 0.3}`,
+    `Q${cx - headR * 0.85} ${headCy - headR * 1.1} ${cx} ${headCy - headR * 1.15}`,
+    `Q${cx + headR * 0.85} ${headCy - headR * 1.1} ${cx + headR * 0.7} ${headCy - headR * 0.3}`,
+  ].join(" ");
+
+  // ── Neck ──
+  const neckD = [
+    `M${cx - neckHW} ${headCy + headR - 2} L${cx - neckHW} ${neckBase}`,
+    `M${cx + neckHW} ${headCy + headR - 2} L${cx + neckHW} ${neckBase}`,
+  ].join(" ");
+
+  // ── Torso – front (quadratic Bézier outline with bust bump) ──
+  const torsoD = [
+    `M${pt(cx - neckHW, neckBase)}`,
+    `Q${pt(cx - neckHW - 4, shoulderY - 2)} ${pt(cx - shoulderHW, shoulderY)}`,
+    `Q${pt(cx - shoulderHW + 2, shoulderY + 8)} ${pt(cx - bustHW + 2, bustY - 8)}`,
+    `Q${pt(cx - bustHW - 1, bustY)} ${pt(cx - bustHW, bustY + 4)}`,
+    `Q${pt(cx - bustHW + 4, (bustY + waistY) / 2)} ${pt(cx - waistHW, waistY)}`,
+    `Q${pt(cx - waistHW - 2, (waistY + smallHipY) / 2)} ${pt(cx - smallHipHW, smallHipY)}`,
+    `Q${pt(cx - hipHW - 1, (smallHipY + hipY) / 2)} ${pt(cx - hipHW, hipY)}`,
+    `Q${pt(cx - hipHW + 2, (hipY + crotchY) / 2)} ${pt(cx - legGap - thighHW * 2, crotchY)}`,
+    `L${pt(cx - legGap, crotchY)}`,
+    `M${pt(cx + legGap, crotchY)}`,
+    `L${pt(cx + legGap + thighHW * 2, crotchY)}`,
+    `Q${pt(cx + hipHW + 2, (hipY + crotchY) / 2)} ${pt(cx + hipHW, hipY)}`,
+    `Q${pt(cx + hipHW + 1, (smallHipY + hipY) / 2)} ${pt(cx + smallHipHW, smallHipY)}`,
+    `Q${pt(cx + waistHW + 2, (waistY + smallHipY) / 2)} ${pt(cx + waistHW, waistY)}`,
+    `Q${pt(cx + bustHW - 4, (bustY + waistY) / 2)} ${pt(cx + bustHW, bustY + 4)}`,
+    `Q${pt(cx + bustHW + 1, bustY)} ${pt(cx + bustHW - 2, bustY - 8)}`,
+    `Q${pt(cx + shoulderHW - 2, shoulderY + 8)} ${pt(cx + shoulderHW, shoulderY)}`,
+    `Q${pt(cx + neckHW + 4, shoulderY - 2)} ${pt(cx + neckHW, neckBase)}`,
+  ].join(" ");
+
+  // ── Torso – back (smooth 2-segment curve, no bust bump) ──
+  const backTorsoD = [
+    `M${pt(cx - neckHW, neckBase)}`,
+    `Q${pt(cx - neckHW - 4, shoulderY - 2)} ${pt(cx - shoulderHW, shoulderY)}`,
+    `Q${pt(cx - shoulderHW + 2, (shoulderY + bustY) / 2)} ${pt(cx - bustHW + 4, bustY)}`,
+    `Q${pt(cx - bustHW + 6, (bustY + waistY) / 2)} ${pt(cx - waistHW, waistY)}`,
+    `Q${pt(cx - waistHW - 2, (waistY + smallHipY) / 2)} ${pt(cx - smallHipHW, smallHipY)}`,
+    `Q${pt(cx - hipHW - 1, (smallHipY + hipY) / 2)} ${pt(cx - hipHW, hipY)}`,
+    `Q${pt(cx - hipHW + 2, (hipY + crotchY) / 2)} ${pt(cx - legGap - thighHW * 2, crotchY)}`,
+    `L${pt(cx - legGap, crotchY)}`,
+    `M${pt(cx + legGap, crotchY)}`,
+    `L${pt(cx + legGap + thighHW * 2, crotchY)}`,
+    `Q${pt(cx + hipHW + 2, (hipY + crotchY) / 2)} ${pt(cx + hipHW, hipY)}`,
+    `Q${pt(cx + hipHW + 1, (smallHipY + hipY) / 2)} ${pt(cx + smallHipHW, smallHipY)}`,
+    `Q${pt(cx + waistHW + 2, (waistY + smallHipY) / 2)} ${pt(cx + waistHW, waistY)}`,
+    `Q${pt(cx + bustHW - 6, (bustY + waistY) / 2)} ${pt(cx + bustHW - 4, bustY)}`,
+    `Q${pt(cx + shoulderHW - 2, (shoulderY + bustY) / 2)} ${pt(cx + shoulderHW, shoulderY)}`,
+    `Q${pt(cx + neckHW + 4, shoulderY - 2)} ${pt(cx + neckHW, neckBase)}`,
+  ].join(" ");
+
+  // ── Bust darts (front only) ──
+  const bpd = v.half_bust_point_distance * scale;
+  const bustDartL = `M${cx - bpd - 4} ${bustY - 5} Q${cx - bpd} ${bustY + 5} ${cx - bpd + 4} ${bustY - 5}`;
+  const bustDartR = `M${cx + bpd - 4} ${bustY - 5} Q${cx + bpd} ${bustY + 5} ${cx + bpd + 4} ${bustY - 5}`;
+
+  // ── Legs ──
+  const buildLeg = (outerX: number, innerX: number, legCx: number) => {
+    const kO = outerX < cx ? -1 : 1;
+    return [
+      `M${pt(outerX, crotchY)}`,
+      `Q${pt(legCx + kO * (kneeHW + 2), (crotchY + kneeY) / 2)} ${pt(legCx + kO * kneeHW, kneeY)}`,
+      `Q${pt(legCx + kO * (ankleHW + 1), (kneeY + floorY) / 2)} ${pt(legCx + kO * ankleHW, floorY)}`,
+      `L${pt(legCx - kO * ankleHW, floorY)}`,
+      `Q${pt(legCx - kO * (ankleHW + 1), (kneeY + floorY) / 2)} ${pt(legCx - kO * kneeHW, kneeY)}`,
+      `Q${pt(legCx - kO * (kneeHW + 2), (crotchY + kneeY) / 2)} ${pt(innerX, crotchY)}`,
+    ].join(" ");
+  };
+
+  const lLO = cx - legGap - thighHW * 2;
+  const lLI = cx - legGap;
+  const lLCx = (lLO + lLI) / 2;
+  const rLO = cx + legGap + thighHW * 2;
+  const rLI = cx + legGap;
+  const rLCx = (rLO + rLI) / 2;
+
+  // ── Feet ──
+  const footRx = ankleHW * 2.2;
+  const footRy = 6;
+  const footCy = floorY + footRy / 2;
+
+  // ── Arms ──
+  const buildArm = (side: "left" | "right") => {
+    const s = side === "left" ? -1 : 1;
+    const sx = cx + s * shoulderHW;
+    const sy = shoulderY;
+
+    const elX = sx + s * armDx * (elbowY - sy);
+    const elY = sy + armDy * (elbowY - sy);
+    const wrX = sx + s * armDx * (wristY - sy);
+    const wrY = sy + armDy * (wristY - sy);
+
+    const uaW = upperArmW;
+    const elbW = upperArmW * 0.75;
+    const wrW = wristW;
+    const px = armDy;
+    const py = -armDx;
+
+    const armD = [
+      `M${pt(sx + px * uaW, sy + py * uaW)}`,
+      `Q${pt((sx + elX) / 2 + px * uaW, (sy + elY) / 2 + py * uaW)} ${pt(elX + px * elbW, elY + py * elbW)}`,
+      `Q${pt((elX + wrX) / 2 + px * elbW * 0.7, (elY + wrY) / 2 + py * elbW * 0.7)} ${pt(wrX + px * wrW, wrY + py * wrW)}`,
+      `Q${pt(wrX, wrY + 3)} ${pt(wrX - px * wrW, wrY - py * wrW)}`,
+      `Q${pt((elX + wrX) / 2 - px * elbW * 0.7, (elY + wrY) / 2 - py * elbW * 0.7)} ${pt(elX - px * elbW, elY - py * elbW)}`,
+      `Q${pt((sx + elX) / 2 - px * uaW, (sy + elY) / 2 - py * uaW)} ${pt(sx - px * uaW, sy - py * uaW)}`,
+    ].join(" ");
+
+    const handR = wrW * 1.1;
+    return {
+      armD,
+      hand: { cx: wrX, cy: wrY + handR * 0.8, rx: handR * 0.85, ry: handR },
+    };
+  };
+
+  const leftArm = buildArm("left");
+  const rightArm = buildArm("right");
+
+  // ── Navel (front only) ──
+  const navelCy = waistY + (hipY - waistY) * 0.15;
+
+  // ── Measurement indicator lines — split by view ──
+  const backMeasureLines: MeasureLine[] = [
+    { type: "v", field: "back_waist_length", y1: shoulderY, y2: waistY, x: cx + bustHW + 22 },
+    { type: "h", field: "full_bust", y: bustY, x1: cx - bustHW - 15, x2: cx + bustHW + 15 },
+    { type: "h", field: "full_waist", y: waistY, x1: cx - waistHW - 15, x2: cx + waistHW + 15 },
+    { type: "h", field: "small_hip", y: smallHipY, x1: cx - smallHipHW - 12, x2: cx + smallHipHW + 12 },
+    { type: "h", field: "full_hip", y: hipY, x1: cx - hipHW - 15, x2: cx + hipHW + 15 },
+    { type: "h", field: "upper_arm", y: shoulderY + 20, x1: cx - shoulderHW - upperArmW - 8, x2: cx - shoulderHW + upperArmW + 2 },
+    { type: "v", field: "waist_to_hip", y1: waistY, y2: hipY, x: cx + hipHW + 20 },
+    { type: "h", field: "crotch_depth", y: crotchY, x1: cx - hipHW - 10, x2: cx + hipHW + 10 },
+  ];
+
+  const frontMeasureLines: MeasureLine[] = [
+    { type: "v", field: "front_waist_length", y1: shoulderY, y2: waistY, x: cx - bustHW - 22 },
+    { type: "v", field: "bust_height", y1: shoulderY, y2: bustY, x: cx - bustHW - 20 },
+    { type: "h", field: "neck_circumference", y: neckBase - 2, x1: cx - neckHW - 12, x2: cx + neckHW + 12 },
+    { type: "h", field: "shoulder_length", y: shoulderY, x1: cx - shoulderHW - 12, x2: cx + shoulderHW + 12 },
+    { type: "h", field: "wrist", y: wristY, x1: cx - shoulderHW - armDx * armLen - wristW - 8, x2: cx - shoulderHW - armDx * armLen + wristW + 2 },
+    { type: "h", field: "waist_to_knee", y: kneeY, x1: cx - kneeHW - 20, x2: cx + kneeHW + 20 },
+    { type: "h", field: "waist_to_floor", y: floorY, x1: cx - ankleHW - 30, x2: cx + ankleHW + 30 },
+    { type: "v", field: "arm_length", y1: shoulderY, y2: wristY, x: cx + shoulderHW + armDx * armLen + 15 },
+  ];
+
+  // ViewBox
+  const minY = headCy - headR * 1.2 - 10;
+  const maxY = floorY + 16;
+  const svgH = maxY - minY;
+
+  return {
+    viewBox: `0 ${minY.toFixed(0)} 300 ${svgH.toFixed(0)}`,
+    cx,
+    head: { cx, cy: headCy, rx: headRx, ry: headR },
+    hairD,
+    neckD,
+    torsoD,
+    backTorsoD,
+    bustDartL,
+    bustDartR,
+    leftLegD: buildLeg(lLO, lLI, lLCx),
+    rightLegD: buildLeg(rLO, rLI, rLCx),
+    feet: [
+      { cx: lLCx, cy: footCy, rx: footRx, ry: footRy },
+      { cx: rLCx, cy: footCy, rx: footRx, ry: footRy },
+    ],
+    leftArm,
+    rightArm,
+    navel: { cx, cy: navelCy },
+    backMeasureLines,
+    frontMeasureLines,
+  };
+}
+
+// ── Measurement line sub-component ──────────────────────────────────────────
+
+function MeasureIndicator({
+  line,
+  num,
+  isActive,
+  centerX,
+  onSelect,
+  lineColor,
+  activeColor,
+  labelColor,
+  activeLabelColor,
+}: {
+  line: MeasureLine;
+  num: number;
+  isActive: boolean;
+  centerX: number;
+  onSelect: () => void;
+  lineColor: string;
+  activeColor: string;
+  labelColor: string;
+  activeLabelColor: string;
+}) {
+  const sw = isActive ? 2 : 0.8;
+  const dash = isActive ? undefined : "4 3";
+  const opacity = isActive ? 1 : 0.5;
+  const fontWeight = isActive ? "700" : "400";
+  const lblOpacity = isActive ? 1 : 0.7;
+  const strokeColor = isActive ? activeColor : lineColor;
+  const fillColor = isActive ? activeLabelColor : labelColor;
+
+  if (line.type === "h") {
+    return (
+      <G onPress={onSelect}>
+        {/* Transparent hit-area line for easier tapping */}
+        <Line
+          x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
+          stroke="transparent" strokeWidth={14}
+        />
+        <Line
+          x1={line.x1} y1={line.y} x2={line.x2} y2={line.y}
+          stroke={strokeColor} strokeWidth={sw} strokeDasharray={dash} opacity={opacity}
+        />
+        <SvgText
+          x={line.x2 + 4} y={line.y + 3} fontSize={9}
+          fill={fillColor} fontWeight={fontWeight} opacity={lblOpacity}
+        >
+          {num}
+        </SvgText>
+      </G>
+    );
+  }
+
+  const capSz = 3;
+  const labelX = line.x > centerX ? line.x + 6 : line.x - 8;
+  const labelY = (line.y1 + line.y2) / 2 + 3;
+
+  return (
+    <G onPress={onSelect}>
+      {/* Transparent hit-area line */}
+      <Line
+        x1={line.x} y1={line.y1} x2={line.x} y2={line.y2}
+        stroke="transparent" strokeWidth={14}
+      />
+      <Line
+        x1={line.x} y1={line.y1} x2={line.x} y2={line.y2}
+        stroke={strokeColor} strokeWidth={sw} strokeDasharray={dash} opacity={opacity}
+      />
+      {/* End caps */}
+      <Line
+        x1={line.x - capSz} y1={line.y1} x2={line.x + capSz} y2={line.y1}
+        stroke={strokeColor} strokeWidth={sw} opacity={opacity}
+      />
+      <Line
+        x1={line.x - capSz} y1={line.y2} x2={line.x + capSz} y2={line.y2}
+        stroke={strokeColor} strokeWidth={sw} opacity={opacity}
+      />
+      <SvgText
+        x={labelX} y={labelY} fontSize={9}
+        fill={fillColor} fontWeight={fontWeight} opacity={lblOpacity}
+      >
+        {num}
+      </SvgText>
+    </G>
+  );
+}
+
+// ── Single body view sub-component ──────────────────────────────────────────
+
+type ViewId = "front" | "back";
+
+function BodyView({
+  viewId,
+  geo,
+  measureLines,
+  activeField,
+  onFieldSelect,
+  isDark,
+}: {
+  viewId: ViewId;
+  geo: ReturnType<typeof computeGeometry>;
+  measureLines: MeasureLine[];
+  activeField: MeasurementField | null;
+  onFieldSelect?: (field: MeasurementField) => void;
+  isDark: boolean;
+}) {
+  const gradId = `bodyGrad-${viewId}`;
+  const torsoPath = viewId === "front" ? geo.torsoD : geo.backTorsoD;
+
+  // Colors adapted from the web CSS
+  const bodyStroke = isDark ? "#9ca3af" : "#6b6b6b";
+  const bodyFill = isDark ? "#374151" : undefined; // light mode uses gradient
+  const dotFill = isDark ? "#9ca3af" : "#6b6b6b";
+  const lineColor = isDark ? "#666" : "#bbbbbb";
+  const activeColor = isDark ? "#ef4444" : "#c05050";
+  const labelColor = isDark ? "#666" : "#bbbbbb";
+  const activeLabelColor = isDark ? "#ef4444" : "#c05050";
+  const gradStart = isDark ? "#374151" : "#fdf6ee";
+  const gradEnd = isDark ? "#374151" : "#f0e6d6";
+  const fillProp = isDark ? bodyFill : `url(#${gradId})`;
+
+  return (
+    <Svg viewBox={geo.viewBox} width="100%" height="100%">
+      <Defs>
+        <LinearGradient id={gradId} x1="0" y1="0" x2="1" y2="1">
+          <Stop offset="0%" stopColor={gradStart} />
+          <Stop offset="100%" stopColor={gradEnd} />
+        </LinearGradient>
+      </Defs>
+
+      {/* Head */}
+      <Ellipse
+        cx={geo.head.cx} cy={geo.head.cy} rx={geo.head.rx} ry={geo.head.ry}
+        fill={fillProp} stroke={bodyStroke} strokeWidth={1.5}
+      />
+      {/* Hair */}
+      <Path d={geo.hairD} fill="none" stroke={bodyStroke} strokeWidth={1.2} />
+      {/* Neck */}
+      <Path d={geo.neckD} fill="none" stroke={bodyStroke} strokeWidth={1.5} />
+      {/* Torso */}
+      <Path
+        d={torsoPath} fill={fillProp} stroke={bodyStroke}
+        strokeWidth={1.5} strokeLinejoin="round"
+      />
+      {/* Bust darts — front only */}
+      {viewId === "front" && (
+        <>
+          <Path d={geo.bustDartL} fill="none" stroke={bodyStroke} strokeWidth={0.8} opacity={0.5} />
+          <Path d={geo.bustDartR} fill="none" stroke={bodyStroke} strokeWidth={0.8} opacity={0.5} />
+        </>
+      )}
+      {/* Legs */}
+      <Path d={geo.leftLegD} fill={fillProp} stroke={bodyStroke} strokeWidth={1.5} strokeLinejoin="round" />
+      <Path d={geo.rightLegD} fill={fillProp} stroke={bodyStroke} strokeWidth={1.5} strokeLinejoin="round" />
+      {/* Feet */}
+      {geo.feet.map((f, i) => (
+        <Ellipse
+          key={i} cx={f.cx} cy={f.cy} rx={f.rx} ry={f.ry}
+          fill={fillProp} stroke={bodyStroke} strokeWidth={1.2}
+        />
+      ))}
+      {/* Arms */}
+      <Path d={geo.leftArm.armD} fill={fillProp} stroke={bodyStroke} strokeWidth={1.3} strokeLinejoin="round" />
+      <Path d={geo.rightArm.armD} fill={fillProp} stroke={bodyStroke} strokeWidth={1.3} strokeLinejoin="round" />
+      {/* Hands */}
+      <Ellipse
+        cx={geo.leftArm.hand.cx} cy={geo.leftArm.hand.cy}
+        rx={geo.leftArm.hand.rx} ry={geo.leftArm.hand.ry}
+        fill={fillProp} stroke={bodyStroke} strokeWidth={1}
+      />
+      <Ellipse
+        cx={geo.rightArm.hand.cx} cy={geo.rightArm.hand.cy}
+        rx={geo.rightArm.hand.rx} ry={geo.rightArm.hand.ry}
+        fill={fillProp} stroke={bodyStroke} strokeWidth={1}
+      />
+      {/* Navel — front only */}
+      {viewId === "front" && (
+        <Circle cx={geo.navel.cx} cy={geo.navel.cy} r={1.5} fill={dotFill} opacity={0.3} />
+      )}
+
+      {/* Measurement indicator lines */}
+      {measureLines.map((line) => (
+        <MeasureIndicator
+          key={line.field}
+          line={line}
+          num={FIELD_NUM[line.field]}
+          isActive={activeField === line.field}
+          centerX={geo.cx}
+          onSelect={() => onFieldSelect?.(line.field)}
+          lineColor={lineColor}
+          activeColor={activeColor}
+          labelColor={labelColor}
+          activeLabelColor={activeLabelColor}
+        />
+      ))}
+    </Svg>
+  );
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
+
+export function BodySilhouette({
+  values,
+  activeField,
+  onFieldSelect,
+  style,
+}: Props) {
+  const { t } = useTranslation();
+  const { isDark, colors } = useTheme();
+  const geo = useMemo(() => computeGeometry(values), [values]);
 
   return (
     <View style={[styles.container, style]}>
-      <Svg viewBox="0 0 200 500" width="100%" height="100%">
-        {/* Head */}
-        <Ellipse
-          cx={100}
-          cy={30}
-          rx={16}
-          ry={20}
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Neck */}
-        <Path
-          d="M90 49 L90 62 M110 49 L110 62"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Torso */}
-        <Path
-          d="M90 62 Q88 66 48 74 Q36 80 34 100 L32 140 Q34 170 44 190 Q38 210 34 240 Q32 260 36 280 Q44 300 56 320 L60 360 L58 410 Q56 440 54 460 L52 475 M110 62 Q112 66 152 74 Q164 80 166 100 L168 140 Q166 170 156 190 Q162 210 166 240 Q168 260 164 280 Q156 300 144 320 L140 360 L142 410 Q144 440 146 460 L148 475"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Feet */}
-        <Path
-          d="M52 475 L46 478 L44 480 L54 480 L58 476 M148 475 L154 478 L156 480 L146 480 L142 476"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Arms */}
-        <Path
-          d="M48 74 L28 88 Q18 110 16 150 L14 200 Q12 230 14 250 L16 260 M152 74 L172 88 Q182 110 184 150 L186 200 Q188 230 186 250 L184 260"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Hands */}
-        <Path
-          d="M16 260 L14 266 L18 264 M184 260 L186 266 L182 264"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        {/* Inner legs */}
-        <Path
-          d="M78 320 L80 360 L82 410 Q80 440 78 460 L76 475 M122 320 L120 360 L118 410 Q120 440 122 460 L124 475"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <Path
-          d="M76 475 L72 478 L70 480 L80 480 L82 476 M124 475 L128 478 L130 480 L120 480 L118 476"
-          fill="none"
-          stroke={outlineColor}
-          strokeWidth={1.5}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
+      {/* Back view */}
+      <View style={styles.viewColumn}>
+        <View style={styles.svgContainer}>
+          <BodyView
+            viewId="back"
+            geo={geo}
+            measureLines={geo.backMeasureLines}
+            activeField={activeField}
+            onFieldSelect={onFieldSelect}
+            isDark={isDark}
+          />
+        </View>
+        <Text style={[styles.viewLabel, { color: colors.textSecondary }]}>
+          {t("measurements.backView")}
+        </Text>
+      </View>
 
-        {/* Measurement lines */}
-        {(Object.keys(LINES) as MeasurementField[]).map((field) => {
-          const [x1, y1, x2, y2] = LINES[field]!;
-          const isActive = activeField === field;
-          const labelDef = LINE_LABELS[field];
-          return (
-            <G key={field}>
-              <Line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke={isActive ? colors.primary : inactiveLine}
-                strokeWidth={isActive ? 2 : 1}
-                strokeDasharray={isActive ? undefined : "4 3"}
-              />
-              {labelDef && (
-                <SvgText
-                  x={labelDef[0]}
-                  y={labelDef[1]}
-                  fontSize={7}
-                  fill={isActive ? colors.primary : inactiveLabel}
-                  fontWeight={isActive ? "600" : "400"}
-                >
-                  {labelDef[2]}
-                </SvgText>
-              )}
-            </G>
-          );
-        })}
-      </Svg>
+      {/* Front view */}
+      <View style={styles.viewColumn}>
+        <View style={styles.svgContainer}>
+          <BodyView
+            viewId="front"
+            geo={geo}
+            measureLines={geo.frontMeasureLines}
+            activeField={activeField}
+            onFieldSelect={onFieldSelect}
+            isDark={isDark}
+          />
+        </View>
+        <Text style={[styles.viewLabel, { color: colors.textSecondary }]}>
+          {t("measurements.frontView")}
+        </Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
-    maxWidth: 220,
-    aspectRatio: 200 / 500,
-    alignSelf: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    gap: 12,
     marginBottom: 16,
+  },
+  viewColumn: {
+    flex: 1,
+    maxWidth: 200,
+    alignItems: "center",
+  },
+  svgContainer: {
+    width: "100%",
+    aspectRatio: 300 / 500,
+  },
+  viewLabel: {
+    marginTop: 4,
+    fontSize: 12,
   },
 });

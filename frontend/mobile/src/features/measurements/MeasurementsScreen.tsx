@@ -1,12 +1,15 @@
+import { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../hooks/useTheme";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import type { ColorPalette } from "../../theme/colors";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 import { BodySilhouette } from "./BodySilhouette";
 import { MeasurementFieldRow } from "./MeasurementField";
-import { useMeasurements, MEASUREMENT_SECTIONS } from "./useMeasurements";
+import { MEASUREMENT_SECTIONS } from "@shared/data";
+import { useMeasurementsStore } from "../../stores";
+import type { MeasurementField } from "@shared/types";
 
 const SIZES = [
   { value: 34, label: "T34 (XS)" },
@@ -26,93 +29,113 @@ export function MeasurementsScreen() {
   const {
     values,
     idk,
-    activeField,
     size,
     preset,
+    loaded,
     updateField,
     toggleIdk,
-    setActiveField,
     applySize,
     applyPreset,
-  } = useMeasurements();
+    fetch,
+  } = useMeasurementsStore();
+  const [activeField, setActiveField] = useState<MeasurementField | null>(null);
 
-  const sizeChips = (
-    <>
-      {/* Size selector */}
-      <View style={styles.sizeRow}>
-        {SIZES.map((s) => (
-          <SizeChip
-            key={s.value}
-            label={s.label}
-            isActive={size === s.value}
-            onPress={() => applySize(s.value)}
-            colors={colors}
-          />
-        ))}
-      </View>
+  useEffect(() => {
+    if (!loaded) fetch();
+  }, [loaded, fetch]);
 
-      {/* Preset selector */}
-      <View style={styles.sizeRow}>
-        <SizeChip
-          label={t("measurements.presetNone")}
-          isActive={preset === null}
-          onPress={() => applySize(size)}
-          colors={colors}
-        />
-        <SizeChip
-          label={t("measurements.presetKwama")}
-          isActive={preset === "kwama"}
-          onPress={() => applyPreset("kwama")}
-          colors={colors}
-        />
-        <SizeChip
-          label={t("measurements.presetVivien")}
-          isActive={preset === "vivien"}
-          onPress={() => applyPreset("vivien")}
-          colors={colors}
-        />
-      </View>
-    </>
+  const allFields = MEASUREMENT_SECTIONS.flatMap((s) => s.fields);
+
+  const countryChips = (
+    <View style={styles.chipRow}>
+      <SizeChip
+        label={t("measurements.france")}
+        isActive={true}
+        onPress={() => {}}
+        colors={colors}
+      />
+      <SizeChip
+        label={t("measurements.unitedStates")}
+        isActive={false}
+        onPress={() => {}}
+        colors={colors}
+      />
+      <SizeChip
+        label={t("measurements.unitedKingdom")}
+        isActive={false}
+        onPress={() => {}}
+        colors={colors}
+      />
+    </View>
   );
 
-  const fieldSections = MEASUREMENT_SECTIONS.map((section) => (
-    <View key={section.sectionKey}>
-      <Text
-        style={[
-          styles.sectionHeader,
-          { color: colors.primary, borderBottomColor: colors.cardBorder },
-        ]}
-      >
-        {t(section.sectionKey)}
-      </Text>
-      <View style={isWide ? styles.fieldsGrid : undefined}>
-        {section.fields.map((field) => (
-          <View key={field} style={isWide ? styles.fieldCell : undefined}>
-            <MeasurementFieldRow
-              field={field}
-              value={values[field]}
-              isIdk={!!idk[field]}
-              onValueChange={updateField}
-              onIdkToggle={toggleIdk}
-              onFocus={setActiveField}
-            />
-          </View>
-        ))}
-      </View>
+  const sizeChips = (
+    <View style={styles.chipRow}>
+      {SIZES.map((s) => (
+        <SizeChip
+          key={s.value}
+          label={s.label}
+          isActive={size === s.value}
+          onPress={() => applySize(s.value)}
+          colors={colors}
+        />
+      ))}
     </View>
+  );
+
+  const presetChips = (
+    <View style={styles.chipRow}>
+      <SizeChip
+        label={t("measurements.presetNone")}
+        isActive={preset === null}
+        onPress={() => applySize(size)}
+        colors={colors}
+      />
+      <SizeChip
+        label={t("measurements.presetKwama")}
+        isActive={preset === "kwama"}
+        onPress={() => applyPreset("kwama")}
+        colors={colors}
+      />
+      <SizeChip
+        label={t("measurements.presetVivien")}
+        isActive={preset === "vivien"}
+        onPress={() => applyPreset("vivien")}
+        colors={colors}
+      />
+    </View>
+  );
+
+  const fieldList = allFields.map((field) => (
+    <MeasurementFieldRow
+      key={field}
+      field={field}
+      value={values[field]}
+      isIdk={!!idk[field]}
+      isActive={activeField === field}
+      onValueChange={updateField}
+      onIdkToggle={toggleIdk}
+      onFocus={setActiveField}
+    />
   ));
 
   if (isWide) {
     return (
       <ScreenWrapper>
-        <PageHeading>{t("measurements.title")}</PageHeading>
+        {countryChips}
+        {sizeChips}
+        {presetChips}
         <View style={styles.wideRow}>
           <View style={styles.wideLeft}>
-            <BodySilhouette activeField={activeField} style={styles.silhouetteWide} />
+            <BodySilhouette
+              values={values}
+              activeField={activeField}
+              onFieldSelect={setActiveField}
+              style={styles.silhouetteWide}
+            />
           </View>
           <View style={styles.wideRight}>
-            {sizeChips}
-            {fieldSections}
+            {fieldList}
           </View>
         </View>
       </ScreenWrapper>
@@ -121,10 +144,15 @@ export function MeasurementsScreen() {
 
   return (
     <ScreenWrapper>
-      <PageHeading>{t("measurements.title")}</PageHeading>
-      <BodySilhouette activeField={activeField} />
+      {countryChips}
       {sizeChips}
-      {fieldSections}
+      {presetChips}
+      <BodySilhouette
+        values={values}
+        activeField={activeField}
+        onFieldSelect={setActiveField}
+      />
+      {fieldList}
     </ScreenWrapper>
   );
 }
@@ -171,21 +199,13 @@ const styles = StyleSheet.create({
     flex: 55,
   },
   silhouetteWide: {
-    maxWidth: 350,
+    maxWidth: 400,
   },
-  fieldsGrid: {
+  chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-  },
-  fieldCell: {
-    flexBasis: "48%",
-  },
-  sizeRow: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-    marginBottom: 20,
+    marginBottom: 12,
   },
   sizeChip: {
     borderWidth: 1,
@@ -196,15 +216,5 @@ const styles = StyleSheet.create({
   sizeText: {
     fontSize: 12,
     fontWeight: "600",
-  },
-  sectionHeader: {
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-    marginTop: 16,
-    paddingBottom: 4,
-    borderBottomWidth: 1,
-    marginBottom: 4,
   },
 });

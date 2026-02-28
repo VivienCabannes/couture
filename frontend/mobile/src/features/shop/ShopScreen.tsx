@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useTheme } from "../../hooks/useTheme";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 import { PatternCard } from "./PatternCard";
 import { fetchPieces } from "@shared/api";
 import { useSelectionsStore } from "../../stores";
@@ -61,9 +61,7 @@ export function ShopScreen() {
 
   return (
     <ScreenWrapper scrollable={false}>
-      <View style={styles.header}>
-        <PageHeading>{t("shop.title")}</PageHeading>
-      </View>
+      <View style={styles.header} />
 
       {loading && (
         <Text style={[styles.message, { color: colors.textSecondary }]}>

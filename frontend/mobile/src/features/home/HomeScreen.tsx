@@ -1,19 +1,16 @@
 import { View, StyleSheet } from "react-native";
-import { useTranslation } from "react-i18next";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 import { useTheme } from "../../hooks/useTheme";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
 import { NavigationCard } from "./NavigationCard";
 import { CARDS, MAIN_CARDS, SIDE_CARDS } from "./cardData";
 
 export function HomeScreen() {
-  const { t } = useTranslation();
   const { isWide } = useResponsiveLayout();
   const { colors } = useTheme();
 
   return (
     <ScreenWrapper>
-      <PageHeading>{t("home.welcome")}</PageHeading>
       {isWide ? (
         <View style={styles.wideContainer}>
           <View style={styles.mainColumn}>

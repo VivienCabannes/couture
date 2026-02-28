@@ -2,6 +2,7 @@ import "./src/i18n";
 
 import { NavigationContainer, DefaultTheme, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useTranslation } from "react-i18next";
 
 import { ThemeProvider } from "./src/theme/ThemeProvider";
 import { useTheme } from "./src/hooks/useTheme";
@@ -26,8 +27,18 @@ export type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const SCREEN_TITLE_KEYS: Record<string, string> = {
+  Designer: "designer.title",
+  Shop: "shop.title",
+  Modelist: "modelist.title",
+  Measurements: "measurements.title",
+  Sewing: "sewing.title",
+  Help: "help.title",
+};
+
 function AppNavigator() {
   const { isDark, colors } = useTheme();
+  const { t } = useTranslation();
 
   const navTheme = {
     ...(isDark ? DarkTheme : DefaultTheme),
@@ -44,48 +55,23 @@ function AppNavigator() {
   return (
     <NavigationContainer theme={navTheme}>
       <Stack.Navigator
-        screenOptions={{
+        screenOptions={({ route }) => ({
           headerTintColor: colors.text,
           headerStyle: { backgroundColor: colors.headerBg },
           headerTitleStyle: { color: colors.text, fontWeight: "600" },
           headerRight: () => <HeaderActions />,
-        }}
+          title: SCREEN_TITLE_KEYS[route.name]
+            ? t(SCREEN_TITLE_KEYS[route.name])
+            : "Couture",
+        })}
       >
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Designer"
-          component={DesignerScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Shop"
-          component={ShopScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Modelist"
-          component={ModelistScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Measurements"
-          component={MeasurementsScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Sewing"
-          component={SewingScreen}
-          options={{ title: "Couture" }}
-        />
-        <Stack.Screen
-          name="Help"
-          component={HelpScreen}
-          options={{ title: "Couture" }}
-        />
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Designer" component={DesignerScreen} />
+        <Stack.Screen name="Shop" component={ShopScreen} />
+        <Stack.Screen name="Modelist" component={ModelistScreen} />
+        <Stack.Screen name="Measurements" component={MeasurementsScreen} />
+        <Stack.Screen name="Sewing" component={SewingScreen} />
+        <Stack.Screen name="Help" component={HelpScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

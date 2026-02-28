@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 import Svg, { Path, Line } from "react-native-svg";
 import { useTheme } from "../../hooks/useTheme";
 import { useResponsiveLayout } from "../../hooks/useResponsiveLayout";
-import { ScreenWrapper, PageHeading } from "../../components";
+import { ScreenWrapper } from "../../components";
 
 type Tool = "pen" | "eraser";
 type DrawPath = { d: string; color: string };
@@ -153,8 +153,6 @@ export function DesignerScreen() {
           </View>
         </Pressable>
       </Modal>
-
-      <PageHeading>{t("designer.title")}</PageHeading>
 
       <View style={isWide ? styles.wideRow : undefined}>
         {/* Left column: tools + palette + canvas */}
