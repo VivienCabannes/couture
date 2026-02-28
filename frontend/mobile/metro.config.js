@@ -13,7 +13,14 @@ config.watchFolders = [sharedDir];
 config.resolver.nodeModulesPaths = [mobileModules];
 
 // Resolve @shared/* imports to ../shared/src/*
+// Stub out desktop-only Tauri packages so shared code can import them
+// without breaking the React Native bundle.
+const tauriStub = path.resolve(__dirname, "tauri-stub.js");
+
 config.resolver.resolveRequest = (context, moduleName, platform) => {
+  if (moduleName.startsWith("@tauri-apps/")) {
+    return { type: "sourceFile", filePath: tauriStub };
+  }
   if (moduleName.startsWith("@shared/")) {
     const rest = moduleName.slice("@shared/".length);
     const newModuleName = path.join(sharedDir, rest);
