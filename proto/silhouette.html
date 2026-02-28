@@ -320,70 +320,77 @@ function computeGeometry(v) {
     const sx = cx + s * shoulderHW;
     const sy = shoulderY;
 
-    const akimboAngle = 50 * Math.PI / 180;
-    const sinA = Math.sin(akimboAngle);
-    const cosA = Math.cos(akimboAngle);
-    const upperArmLen = elbowLen;
+    // 40° from vertical — natural akimbo angle
+    const angle = 40 * Math.PI / 180;
+    const sinA = Math.sin(angle);
+    const cosA = Math.cos(angle);
 
-    // Elbow position — out and down from shoulder
-    const elX = sx + s * upperArmLen * sinA;
-    const elY = sy + upperArmLen * cosA;
+    // Elbow position along center of arm
+    const elCx = sx + s * elbowLen * sinA;
+    const elCy = sy + elbowLen * cosA;
 
-    // Wrist/hand position at hip
-    const wrX = cx + s * (waistHW + 3);
-    const wrY = waistY - 2;
+    // Hand center at hip
+    const hx = cx + s * (waistHW + 2);
+    const hy = waistY;
 
-    // Half-widths
-    const shW = upperArmW;
-    const elW = upperArmW * 0.65;
-    const wrW2 = wristW * 0.7;
+    // Arm half-widths (thinner than anatomical for fashion illustration look)
+    const w0 = upperArmW * 0.65;  // shoulder
+    const w1 = upperArmW * 0.45;  // elbow
+    const w2 = wristW * 0.45;     // wrist
 
-    // Upper arm direction (normalized)
-    const uaDx = elX - sx, uaDy = elY - sy;
-    const uaL = Math.sqrt(uaDx * uaDx + uaDy * uaDy);
-    const uaNx = uaDx / uaL, uaNy = uaDy / uaL;
-    // Top perpendicular (points upward, away from ground): s * (uaNy, -uaNx)
-    const uaTx = s * uaNy, uaTy = s * (-uaNx);
+    // Upper arm perpendicular: outer = away from body (upward for akimbo)
+    // Direction (s*sinA, cosA); outer perp = (s*cosA, -sinA)
+    const ua_ox = s * cosA, ua_oy = -sinA;
 
-    // Forearm direction (normalized)
-    const faDx = wrX - elX, faDy = wrY - elY;
-    const faL = Math.sqrt(faDx * faDx + faDy * faDy);
-    const faNx = faDx / faL, faNy = faDy / faL;
-    // Top perpendicular for forearm: s * (-faNy, faNx)
-    const faTx = s * (-faNy), faTy = s * faNx;
+    // Forearm perpendicular: pick the one pointing upward (y < 0)
+    const fdx = hx - elCx, fdy = hy - elCy;
+    const fl = Math.sqrt(fdx * fdx + fdy * fdy);
+    const fnx = fdx / fl, fny = fdy / fl;
+    let fa_ox = fny, fa_oy = -fnx;
+    if (fa_oy > 0) { fa_ox = -fa_ox; fa_oy = -fa_oy; }
 
-    // Outer (top) edge points
-    const sO = { x: sx + uaTx * shW, y: sy + uaTy * shW };
-    const eOua = { x: elX + uaTx * elW, y: elY + uaTy * elW };
-    const eOfa = { x: elX + faTx * elW, y: elY + faTy * elW };
-    const wO = { x: wrX + faTx * wrW2, y: wrY + faTy * wrW2 };
+    // Key outline points
+    const sTop  = { x: sx   + ua_ox * w0, y: sy   + ua_oy * w0 };
+    const sBot  = { x: sx   - ua_ox * w0, y: sy   - ua_oy * w0 };
+    const eUaT  = { x: elCx + ua_ox * w1, y: elCy + ua_oy * w1 };  // elbow, upper arm top
+    const eUaB  = { x: elCx - ua_ox * w1, y: elCy - ua_oy * w1 };  // elbow, upper arm bottom
+    const eFaT  = { x: elCx + fa_ox * w1, y: elCy + fa_oy * w1 };  // elbow, forearm top
+    const eFaB  = { x: elCx - fa_ox * w1, y: elCy - fa_oy * w1 };  // elbow, forearm bottom
+    const wTop  = { x: hx   + fa_ox * w2, y: hy   + fa_oy * w2 };
+    const wBot  = { x: hx   - fa_ox * w2, y: hy   - fa_oy * w2 };
 
-    // Inner (bottom) edge points
-    const sI = { x: sx - uaTx * shW, y: sy - uaTy * shW };
-    const eIua = { x: elX - uaTx * elW, y: elY - uaTy * elW };
-    const eIfa = { x: elX - faTx * elW, y: elY - faTy * elW };
-    const wI = { x: wrX - faTx * wrW2, y: wrY - faTy * wrW2 };
+    // Outer contour: shoulder top → elbow outer (pointy) → wrist bottom
+    // The outer silhouette crosses from ua_top to fa_bottom at the pointy elbow
+    // Inner contour: wrist top → elbow inner (crook) → shoulder bottom
+    // The inner silhouette crosses from fa_top to ua_bottom at the crook
+
+    // Pointy elbow apex — slightly beyond the elbow center
+    const apexX = elCx + s * w1 * 1.6;
+    const apexY = elCy;
+    // Elbow crook — slightly inward
+    const crookX = elCx - s * w1 * 0.3;
+    const crookY = elCy;
 
     const armD = [
-      // Top edge: shoulder → elbow → wrist
-      `M${pt(sO.x, sO.y)}`,
-      `Q${pt((sO.x + eOua.x) / 2 + uaTx * 2, (sO.y + eOua.y) / 2 + uaTy * 2)} ${pt(eOua.x, eOua.y)}`,
-      `Q${pt((eOua.x + eOfa.x) / 2 + uaTx * 1, (eOua.y + eOfa.y) / 2)} ${pt(eOfa.x, eOfa.y)}`,
-      `Q${pt((eOfa.x + wO.x) / 2 + faTx * 2, (eOfa.y + wO.y) / 2 + faTy * 2)} ${pt(wO.x, wO.y)}`,
+      // Outer contour: shoulder → pointy elbow → wrist
+      `M${pt(sTop.x, sTop.y)}`,
+      `Q${pt((sTop.x + eUaT.x) / 2 + ua_ox * w0, (sTop.y + eUaT.y) / 2 + ua_oy * w0)} ${pt(eUaT.x, eUaT.y)}`,
+      `Q${pt(apexX, apexY)} ${pt(eFaB.x, eFaB.y)}`,
+      `Q${pt((eFaB.x + wBot.x) / 2 - fa_ox * w1, (eFaB.y + wBot.y) / 2 - fa_oy * w1)} ${pt(wBot.x, wBot.y)}`,
       // Wrist cap
-      `L${pt(wI.x, wI.y)}`,
-      // Bottom edge: wrist → elbow → shoulder
-      `Q${pt((wI.x + eIfa.x) / 2 - faTx * 2, (wI.y + eIfa.y) / 2 - faTy * 2)} ${pt(eIfa.x, eIfa.y)}`,
-      `Q${pt((eIfa.x + eIua.x) / 2 - uaTx * 1, (eIfa.y + eIua.y) / 2)} ${pt(eIua.x, eIua.y)}`,
-      `Q${pt((eIua.x + sI.x) / 2 - uaTx * 2, (eIua.y + sI.y) / 2 - uaTy * 2)} ${pt(sI.x, sI.y)}`,
+      `Q${pt(hx + fnx * 3, hy + fny * 3)} ${pt(wTop.x, wTop.y)}`,
+      // Inner contour: wrist → crook → shoulder
+      `Q${pt((wTop.x + eFaT.x) / 2 + fa_ox * w1, (wTop.y + eFaT.y) / 2 + fa_oy * w1)} ${pt(eFaT.x, eFaT.y)}`,
+      `Q${pt(crookX, crookY)} ${pt(eUaB.x, eUaB.y)}`,
+      `Q${pt((eUaB.x + sBot.x) / 2 - ua_ox * w0, (eUaB.y + sBot.y) / 2 - ua_oy * w0)} ${pt(sBot.x, sBot.y)}`,
     ].join(" ");
 
-    const handR = wrW2 * 1.3;
+    const handR = w2 * 1.5;
     return {
       armD,
-      hand: { cx: wrX, cy: wrY, rx: handR, ry: handR * 0.9 },
-      elbowX: elX,
-      elbowY: elY,
+      hand: { cx: hx, cy: hy, rx: handR, ry: handR * 0.85 },
+      elbowX: elCx,
+      elbowY: elCy,
     };
   }
 
@@ -395,7 +402,10 @@ function computeGeometry(v) {
   // Underarm Y: where the armhole meets the side body (roughly bustY level)
   const underarmY = bustY + 4;
 
-  // ── Measurement lines — back (10) ──
+  // Hanging arm wrist X position (left side, for back view arm_length measurement)
+  const hangLwrX = cx - shoulderHW - armDx * armLen;
+
+  // ── Measurement lines — back (11) ──
   const backMeasureLines = [
     { type: "v", field: "back_waist_length", y1: shoulderY, y2: waistY, x: cx + bustHW + 22 },
     { type: "h", field: "full_bust", y: bustY, x1: cx - bustHW - 15, x2: cx + bustHW + 15 },
@@ -404,15 +414,14 @@ function computeGeometry(v) {
     { type: "h", field: "full_hip", y: hipY, x1: cx - hipHW - 15, x2: cx + hipHW + 15 },
     { type: "h", field: "half_back_width", y: shoulderY + 14, x1: cx - halfBackW, x2: cx + halfBackW },
     { type: "h", field: "upper_arm", y: shoulderY + 20, x1: cx - shoulderHW - upperArmW - 8, x2: cx - shoulderHW + upperArmW + 2 },
+    { type: "v", field: "arm_length", y1: shoulderY, y2: wristY, x: hangLwrX - wristW - 8 },
     { type: "v", field: "waist_to_hip", y1: waistY, y2: hipY, x: cx + hipHW + 20 },
     { type: "v", field: "crotch_depth", y1: waistY, y2: crotchY, x: cx - hipHW - 18 },
     { type: "v", field: "crotch_length", y1: waistY - 8, y2: crotchY + 8, x: cx },
   ];
 
-  // ── Measurement lines — front (14) ──
-  // Akimbo arm reference points for measurement positioning
+  // ── Measurement lines — front (13) ──
   const akR = frontArms.right;
-  const akL = frontArms.left;
 
   // Armhole arc: small curved indicator around the armhole area (right side)
   const ahCx = cx + shoulderHW - 4;
@@ -433,9 +442,8 @@ function computeGeometry(v) {
     { type: "h", field: "shoulder_length", y: shoulderY, x1: cx - shoulderHW - 12, x2: cx + shoulderHW + 12 },
     { type: "arc", field: "armhole_circumference", d: armholeArcD, labelX: ahCx + ahR + 4, labelY: ahCy + 3 },
     { type: "v", field: "underarm_height", y1: underarmY, y2: waistY, x: cx + bustHW + 8 },
-    { type: "v", field: "arm_length", y1: shoulderY, y2: wristY, x: cx + shoulderHW + armDx * armLen + 15 },
-    { type: "h", field: "elbow_height", y: akR.elbowY, x1: akR.elbowX - 10, x2: akR.elbowX + 10 },
-    { type: "h", field: "wrist", y: waistY, x1: akR.hand.cx - wristW - 4, x2: akR.hand.cx + wristW + 4 },
+    { type: "h", field: "elbow_height", y: akR.elbowY, x1: akR.elbowX - 8, x2: akR.elbowX + 8 },
+    { type: "h", field: "wrist", y: akR.hand.cy, x1: akR.hand.cx - wristW - 4, x2: akR.hand.cx + wristW + 4 },
     { type: "h", field: "waist_to_knee", y: kneeY, x1: cx - kneeHW - 20, x2: cx + kneeHW + 20 },
     { type: "h", field: "waist_to_floor", y: floorY, x1: cx - ankleHW - 30, x2: cx + ankleHW + 30 },
     { type: "v", field: "side_waist_to_floor", y1: waistY, y2: floorY, x: cx + hipHW + 20 },
@@ -447,6 +455,7 @@ function computeGeometry(v) {
   const svgH = maxY - minY;
 
   // Wider to accommodate akimbo elbows
+  const akL = frontArms.left;
   const maxElbowX = Math.max(Math.abs(akR.elbowX - cx), Math.abs(akL.elbowX - cx));
   const svgW = Math.max(320, (maxElbowX + upperArmW + 30) * 2);
   const svgX = cx - svgW / 2;
