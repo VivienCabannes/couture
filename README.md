@@ -64,7 +64,7 @@ docs/               # Project documentation
 ```bash
 cd backend
 pip install -e ".[dev]"
-uvicorn app.main:app --reload
+python -m uvicorn app.main:app --reload
 ```
 
 The API runs at `http://localhost:8000`. Verify with `http://localhost:8000/health`.
