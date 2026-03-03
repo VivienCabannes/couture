@@ -1,13 +1,18 @@
+Only develop the web version now, and ask to make the same for the mobile version later.
 
 # App TODO
 #### Clean the back-end:
-Backend/{python,rust}
 Better organization of the backend
 Make the sure the cli manipulation are intuitive.
 Check that the cli still works.
 
 #### Adding the tissutech option
 Put the help on the top right.
+
+#### Fabric Library
+Details all the fabric you have at home, how much of this fabric do you have (as a set of rectangle)
+Option to browse fabric for a project.
+Option to put a photo, and some notes.
 
 #### Adding printing in A4.
 
@@ -26,7 +31,6 @@ Add a note of the "perroquet/french ruler" vs Bezier curves.
 At the end of the readme, explain the diff with Seamly2D, Valentina, Clo3D and Leectra.
 Document how to make a iOS/Android tablet app, a MacOS/Window Desktop app, publish the website online.
 Document Docker, Rust... What is React, React Native...
-
 
 #### Improve the measurements webpage
 Clean list of measure
