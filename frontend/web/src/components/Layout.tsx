@@ -11,6 +11,7 @@ const ROUTE_TITLE_KEYS: Record<string, string> = {
   "/measurements": "measurements.title",
   "/sewing": "sewing.title",
   "/help": "help.title",
+  "/fabrics": "fabrics.title",
 };
 
 export function Layout({ children }: { children: ReactNode }) {

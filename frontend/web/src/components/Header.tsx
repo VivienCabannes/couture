@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useTheme } from "../hooks/useTheme";
 import { LanguageSelector } from "./LanguageSelector";
 
@@ -9,6 +9,8 @@ interface HeaderProps {
 
 export function Header({ title }: HeaderProps) {
   const { isDark, toggleTheme } = useTheme();
+  const location = useLocation();
+  const backTo = (location.state as { from?: string })?.from ?? "/";
 
   return (
     <header className="bg-white shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-colors duration-300 dark:bg-gray-800 dark:shadow-[0_1px_2px_rgba(0,0,0,0.3)]">
@@ -16,8 +18,8 @@ export function Header({ title }: HeaderProps) {
         {title ? (
           <div className="flex items-center gap-2">
             <Link
-              to="/"
-              aria-label="Back to home"
+              to={backTo}
+              aria-label="Back"
               className="flex items-center text-gray-900 transition-colors duration-200 hover:text-blue-600 dark:text-gray-50 dark:hover:text-blue-400"
             >
               <svg
@@ -43,6 +45,23 @@ export function Header({ title }: HeaderProps) {
           </Link>
         )}
         <div className="flex-1" />
+        <Link
+          to="/help"
+          state={{ from: location.pathname }}
+          aria-label="Help"
+          className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-gray-300 bg-white px-3.5 py-1.5 text-[0.8125rem] font-semibold text-gray-700 transition-colors hover:border-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-gray-500 dark:hover:bg-gray-700"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            className="h-4 w-4 fill-none stroke-current stroke-2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
+        </Link>
         <button
           onClick={toggleTheme}
           aria-label="Toggle dark mode"

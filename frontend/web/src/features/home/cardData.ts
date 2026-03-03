@@ -44,10 +44,10 @@ export const SIDE_CARDS: CardDef[] = [
     icon: `<path d="M21.3 15.3a2.4 2.4 0 010 3.4l-2.6 2.6a2.4 2.4 0 01-3.4 0L2.7 8.7a2.4 2.4 0 010-3.4l2.6-2.6a2.4 2.4 0 013.4 0z"/><line x1="7" y1="7" x2="10" y2="7"/><line x1="9" y1="9" x2="12" y2="9"/><line x1="11" y1="11" x2="14" y2="11"/><line x1="13" y1="13" x2="16" y2="13"/><line x1="15" y1="15" x2="18" y2="15"/>`,
   },
   {
-    route: "/help",
-    labelKey: "help",
-    subtitleKey: "helpDesc",
-    icon: `<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+    route: "/fabrics",
+    labelKey: "fabricLibrary",
+    subtitleKey: "fabricLibraryDesc",
+    icon: `<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/>`,
   },
 ];
 

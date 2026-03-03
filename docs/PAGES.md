@@ -13,6 +13,7 @@ Couture is organized into six main sections, each accessible from the front page
 | Modelist Corner   | `/modelist`      | Edit and adjust pattern geometry interactively     |
 | Measurements      | `/measurements`  | Enter body measurements and select standard sizes |
 | Sewing            | `/sewing`        | Follow step-by-step assembly instructions          |
+| Fabric Library    | `/fabrics`       | Browse fabrics and their properties                |
 | Help              | `/help`          | Learn how to use the app, explore the glossary     |
 
 ---
@@ -163,6 +164,40 @@ Sequential, instruction-based layout:
 ### Status
 
 Under development. The page currently serves as a placeholder. Detailed layout and interactions will be defined as the feature is built.
+
+---
+
+## Fabric Library (`/fabrics`)
+
+The Fabric Library is a browsable catalog of common fabrics and their properties. It helps users choose the right fabric for their garment by displaying key characteristics at a glance.
+
+> **Status:** Static sample data. Backend API integration and user-submitted fabrics are planned for a future release.
+
+### Layout
+
+Top-down structure:
+
+- **Filter bar:** Three dropdown selectors at the top for filtering by material (cotton, silk, wool, linen, synthetic), weight (light/medium/heavy), and stretch level (none/low/medium/high). Filters combine with AND logic.
+- **Fabric grid:** Three columns on desktop, two on tablet, one on mobile. Each card contains:
+  - Fabric name (translated via i18n)
+  - Stretch and drape badges (color-coded pills)
+  - Material type and weight (g/m²)
+  - Recommended garment types
+
+### Sample fabrics
+
+Cotton Poplin, Cotton Jersey, Linen, Silk Charmeuse, Silk Organza, Wool Crepe, Denim, Chiffon, Velvet, Neoprene.
+
+### Interactions
+
+- Selecting a filter immediately narrows the displayed cards.
+- All text is translated via i18n (EN, FR, ES).
+- No backend dependency — data is hardcoded in the component.
+
+### Navigation
+
+- Accessible from the home page via the Fabric Library card (bottom-right side slot, replacing the former Help card).
+- Help is now accessible globally via the question-mark icon button in the header navigation bar.
 
 ---
 

@@ -8,6 +8,7 @@ import { ModelistPage } from "./features/modelist/ModelistPage";
 import { MeasurementsPage } from "./features/measurements/MeasurementsPage";
 import { SewingPage } from "./features/sewing/SewingPage";
 import { HelpPage } from "./features/help/HelpPage";
+import { FabricsPage } from "./features/fabrics/FabricsPage";
 
 export function App() {
   return (
@@ -21,6 +22,7 @@ export function App() {
           <Route path="/measurements" element={<MeasurementsPage />} />
           <Route path="/sewing" element={<SewingPage />} />
           <Route path="/help" element={<HelpPage />} />
+          <Route path="/fabrics" element={<FabricsPage />} />
         </Routes>
       </Layout>
     </ThemeProvider>
