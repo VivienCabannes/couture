@@ -54,7 +54,7 @@ This means:
 
 * **Core Backend:** Python architecture for measurements, points, lines, and curves — done.
 * **Base Blocks:** Standard, mathematically sound base patterns (slopers/blocks) that scale correctly to any inputted measurement — done.
-* **CLI Experience:** Pattern generation via CLI with sensible defaults — done (`backend/cli/`).
+* **CLI Experience:** Pattern generation via CLI with sensible defaults — done (`backend/python/cli/`).
 * **Export:** SVG output from the backend — done. PDF/projector export is planned.
 
 ### Phase 2: Advanced Adjustments & Customization (Partially Complete)

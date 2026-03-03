@@ -30,7 +30,7 @@ ENV/
 # Rust / Tauri
 **/src-tauri/target/
 **/src-tauri/gen/
-rust_backend/target/
+backend/rust/target/
 
 # Environment files
 .env

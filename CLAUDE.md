@@ -4,7 +4,7 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 
 ## Tech stack
 
-- **Backend:** Python (prototyping phase — may migrate to a compiled language for performance)
+- **Backend:** Python + Rust (Python for API/prototyping, Rust for core computation via Tauri)
 - **Frontend:** TypeScript / React / Vite
 - **Mobile:** TypeScript / React Native / Expo
 - **Desktop:** Tauri (wraps the web frontend)
@@ -13,11 +13,18 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 
 ### Backend (`backend/`)
 
+#### Python (`backend/python/`)
+
 - `app/` contains one module per page/section: `designer/`, `shop/`, `modelist/`, `measurements/`, `sewing/`, `help/`
 - `core/` is **strictly** for cross-page domain entities — measurements, designs, and shared data models
 - Page-specific code (pattern algorithms, rendering logic, geometry) stays in its own module — do NOT put it in `core/`
 - `tests/` mirrors the `app/` structure (e.g. `tests/test_modelist.py` for `app/modelist/`)
 - `cli/` contains CLI debugging tools
+
+#### Rust (`backend/rust/`)
+
+- Core computation library used by the Tauri desktop app
+- Exposed as the `couture_core` crate
 
 ### Frontend (`frontend/`)
 
@@ -45,7 +52,7 @@ Couture is a computer-assisted sewing pattern drafting application (web, desktop
 - API client lives in `frontend/shared/src/api/` — never duplicate it per platform
 - No `navigation/` folder — routing config lives at each app's root
 - i18n: EN, FR, ES — all three languages must always be present when adding strings
-- Tests mirror `app/` structure in `backend/tests/`
+- Tests mirror `app/` structure in `backend/python/tests/`
 - Comment complex logic, but avoid obvious comments (e.g. `// increment i` is not helpful)
 - Use descriptive variable and function names to reduce the need for comments
 - Follow consistent code formatting (e.g. Prettier for frontend, Black for backend)

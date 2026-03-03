@@ -1,24 +1,32 @@
 
 # App TODO
 #### Clean the back-end:
-Backend/{python,rush}
+Backend/{python,rust}
 Better organization of the backend
 Make the sure the cli manipulation are intuitive.
 Check that the cli still works.
 
-#### Clean the docs and the vision
-Document the flow
-Make help super clear
-Add a note of the "perroquet/french ruler" vs Bezier curves.
-At the end of the readme, explain the diff with Seamly2D, Valentina, Clo3D and Leectra.
-Document how to make a iOS/Android tablet app, a MacOS/Window Desktop app, publish the website online.
-Document Docker, Rust... What is React, React Native...
+#### Adding the tissutech option
+Put the help on the top right.
+
+#### Adding printing in A4.
 
 #### Ensure persistance of the right obejcts on the website
 Persistence of measurements, pattern selected and the modifications to the patterns.
 Evaluate Zustand solution.
 Ensure it work well with the back-end.
 Option to save a project.
+
+#### Clean the docs and the vision
+Document the flow
+- Be clear about the protocol and core objects shared across the project
+- SVG between modelist corner -> sewing instructions
+Make help super clear
+Add a note of the "perroquet/french ruler" vs Bezier curves.
+At the end of the readme, explain the diff with Seamly2D, Valentina, Clo3D and Leectra.
+Document how to make a iOS/Android tablet app, a MacOS/Window Desktop app, publish the website online.
+Document Docker, Rust... What is React, React Native...
+
 
 #### Improve the measurements webpage
 Clean list of measure

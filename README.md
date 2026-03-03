@@ -59,6 +59,16 @@ docs/               # Project documentation
 
 ## Getting started
 
+### Quick start (web)
+
+To start both the backend and frontend with a single command:
+
+```bash
+./scripts/launch_web.sh
+```
+
+This launches the backend on `http://localhost:8000` and the web frontend on `http://localhost:5173`. Press Ctrl+C to stop both.
+
 ### 1. Backend
 
 ```bash
