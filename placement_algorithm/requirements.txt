@@ -1,0 +1,20 @@
+# Core dependencies
+shapely>=2.0.0
+numpy>=1.24.0
+
+# Optional - for advanced algorithms
+scipy>=1.10.0
+deap>=1.4.0
+ortools>=9.6.0
+
+# Optional - for SVG support
+svgwrite>=1.4.0
+svgpathtools>=1.6.0
+
+# Optional - for data validation
+pydantic>=2.0.0
+
+# Development dependencies
+pytest>=7.4.0
+black>=23.0.0
+ruff>=0.0.290
